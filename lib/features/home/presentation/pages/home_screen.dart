@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-import '../../core/constants.dart';
-import '../../routes.dart';
+import '../../../../core/constants/app_constants.dart';
+import '../../../../app/router/app_routes.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});

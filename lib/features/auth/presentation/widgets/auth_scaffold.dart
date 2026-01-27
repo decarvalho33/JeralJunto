@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../core/constants.dart';
+import '../../../../core/constants/app_constants.dart';
 
 class AuthScaffold extends StatelessWidget {
   const AuthScaffold({super.key, required this.child});

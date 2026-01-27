@@ -3,11 +3,11 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-import '../../core/constants.dart';
-import '../../core/ui_utils.dart';
-import '../../routes.dart';
-import 'auth_scaffold.dart';
-import 'auth_widgets.dart';
+import '../../../../core/constants/app_constants.dart';
+import '../../../../core/helpers/ui_utils.dart';
+import '../../../../app/router/app_routes.dart';
+import '../widgets/auth_scaffold.dart';
+import '../widgets/auth_widgets.dart';
 
 enum RegisterStep { signup, profile }
 
@@ -181,16 +181,16 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
   List<Widget> _buildSignup() {
     return [
-      const SizedBox(height: 8),
-      Center(
-        child: Image.asset(
-          'web/icons/JJ_logo.png',
-          width: 200,
-          height: 200,
-          fit: BoxFit.contain,
-          semanticLabel: 'Logo do app',
-        ),
-      ),
+      // const SizedBox(height: 8),
+      // Center(
+      //   child: Image.asset(
+      //     'web/icons/JJ_logo.png',
+      //     width: 200,
+      //     height: 200,
+      //     fit: BoxFit.contain,
+      //     semanticLabel: 'Logo do app',
+      //   ),
+      // ),
       const SizedBox(height: 16),
       const Text(
         'Crie sua conta',
@@ -212,7 +212,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
             backgroundColor: Colors.white,
           ),
           icon: const Icon(Icons.g_mobiledata, size: 28),
-          label: const Text('Cadastrar com Google'),
+          label: const Text('Entrar com Google'),
         ),
       ),
       const SizedBox(height: 14),
@@ -226,7 +226,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
             backgroundColor: AppColors.apple,
           ),
           icon: const Icon(Icons.apple),
-          label: const Text('Cadastrar com Apple'),
+          label: const Text('Entrar com Apple'),
         ),
       ),
       const SizedBox(height: 24),

@@ -3,11 +3,11 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-import '../../core/constants.dart';
-import '../../routes.dart';
-import 'auth_models.dart';
-import 'auth_scaffold.dart';
-import 'auth_widgets.dart';
+import '../../../../core/constants/app_constants.dart';
+import '../../../../app/router/app_routes.dart';
+import '../../domain/entities/register_args.dart';
+import '../widgets/auth_scaffold.dart';
+import '../widgets/auth_widgets.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -89,33 +89,6 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
-  Future<void> _signInWithProvider(OAuthProvider provider) async {
-    setState(() => _isLoading = true);
-    try {
-      await Supabase.instance.client.auth.signInWithOAuth(provider);
-      await _upsertUserProfile();
-    } on AuthException catch (error) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(error.message), backgroundColor: Colors.red),
-        );
-      }
-    } catch (_) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Erro ao entrar. Tente novamente.'),
-            backgroundColor: Colors.red,
-          ),
-        );
-      }
-    } finally {
-      if (mounted) {
-        setState(() => _isLoading = false);
-      }
-    }
-  }
-
   Future<void> _upsertUserProfile() async {
     final client = Supabase.instance.client;
     final user = client.auth.currentUser;
@@ -171,42 +144,14 @@ class _LoginScreenState extends State<LoginScreen> {
           ),
           const SizedBox(height: 12),
           const Text(
-            'Acesso rápido',
+            'Entrar',
             style: TextStyle(fontSize: 28, fontWeight: FontWeight.w700),
           ),
           const SizedBox(height: 8),
           const Text(
-            'Escolha Google ou Apple. Se preferir, use email e senha.',
+            'Use seu email e senha para acessar.',
             style: TextStyle(fontSize: 15, height: 1.5, color: AppColors.muted),
           ),
-          const SizedBox(height: 28),
-          SizedBox(
-            width: double.infinity,
-            height: 52,
-            child: OutlinedButton.icon(
-              onPressed: _isLoading
-                  ? null
-                  : () => _signInWithProvider(OAuthProvider.google),
-              icon: const Icon(Icons.g_mobiledata, size: 28),
-              label: const Text('Continuar com Google'),
-            ),
-          ),
-          const SizedBox(height: 14),
-          SizedBox(
-            width: double.infinity,
-            height: 52,
-            child: ElevatedButton.icon(
-              onPressed:
-                  _isLoading ? null : () => _signInWithProvider(OAuthProvider.apple),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.apple,
-              ),
-              icon: const Icon(Icons.apple),
-              label: const Text('Continuar com Apple'),
-            ),
-          ),
-          const SizedBox(height: 24),
-          const AuthDivider(),
           const SizedBox(height: 24),
           const AuthLabel('Email'),
           const SizedBox(height: 8),

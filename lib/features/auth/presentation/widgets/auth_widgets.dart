@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../core/constants.dart';
+import '../../../../core/constants/app_constants.dart';
 
 class AuthLabel extends StatelessWidget {
   const AuthLabel(this.text, {super.key});

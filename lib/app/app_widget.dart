@@ -1,15 +1,17 @@
 import 'package:flutter/material.dart';
 
-import 'core/constants.dart';
-import 'features/auth/auth_gate.dart';
-import 'features/auth/email_register_screen.dart';
-import 'features/auth/login_screen.dart';
-import 'features/auth/register_screen.dart';
-import 'features/home/home_screen.dart';
-import 'routes.dart';
+import '../core/constants/app_constants.dart';
+import '../features/auth/presentation/pages/email_register_screen.dart';
+import '../features/auth/presentation/pages/login_screen.dart';
+import '../features/auth/presentation/pages/register_screen.dart';
+import '../features/auth/presentation/pages/terms_screen.dart';
+import '../features/auth/presentation/pages/welcome_screen.dart';
+import '../features/home/presentation/pages/home_screen.dart';
+import 'router/app_routes.dart';
+import 'router/auth_gate.dart';
 
-class App extends StatelessWidget {
-  const App({super.key});
+class AppWidget extends StatelessWidget {
+  const AppWidget({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -26,12 +28,14 @@ class App extends StatelessWidget {
       ),
       routes: {
         AppRoutes.root: (_) => const AuthGate(),
+        AppRoutes.welcome: (_) => const WelcomeScreen(),
         AppRoutes.register: (_) => const RegisterScreen(),
         AppRoutes.emailRegister: (_) => const EmailRegisterScreen(),
         AppRoutes.login: (_) => const LoginScreen(),
         AppRoutes.home: (_) => const HomeScreen(),
+        AppRoutes.terms: (_) => const TermsScreen(),
       },
-      initialRoute: AppRoutes.root,
+      initialRoute: AppRoutes.welcome,
     );
   }
 }

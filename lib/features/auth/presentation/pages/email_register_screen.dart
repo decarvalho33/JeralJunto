@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-import '../../core/constants.dart';
-import '../../core/ui_utils.dart';
-import '../../routes.dart';
-import 'auth_scaffold.dart';
-import 'auth_widgets.dart';
+import '../../../../core/constants/app_constants.dart';
+import '../../../../core/helpers/ui_utils.dart';
+import '../../../../app/router/app_routes.dart';
+import '../widgets/auth_scaffold.dart';
+import '../widgets/auth_widgets.dart';
 
 class EmailRegisterScreen extends StatefulWidget {
   const EmailRegisterScreen({super.key});
