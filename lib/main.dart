@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -7,10 +8,20 @@ import 'app/app_widget.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  await dotenv.load(fileName: '.env');
+  if (!kIsWeb) {
+    await dotenv.load(fileName: '.env');
+  }
+
+  final supabaseUrl = kIsWeb
+      ? const String.fromEnvironment('SUPABASE_URL')
+      : (dotenv.env['SUPABASE_URL'] ?? '');
+  final supabaseAnonKey = kIsWeb
+      ? const String.fromEnvironment('SUPABASE_ANON_KEY')
+      : (dotenv.env['SUPABASE_ANON_KEY'] ?? '');
+
   await Supabase.initialize(
-    url: dotenv.env['SUPABASE_URL'] ?? '',
-    anonKey: dotenv.env['SUPABASE_ANON_KEY'] ?? '',
+    url: supabaseUrl,
+    anonKey: supabaseAnonKey,
     authOptions: const FlutterAuthClientOptions(
       autoRefreshToken: true,
     ),

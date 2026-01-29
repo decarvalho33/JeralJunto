@@ -14,7 +14,6 @@ class AppTheme {
     primary: AppColors.accent,
     secondary: AppColors.muted,
     surface: Colors.white,
-    background: AppColors.surface,
   );
 
   static const TextTheme textTheme = TextTheme(
