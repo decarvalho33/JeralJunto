@@ -8,25 +8,25 @@ Este documento explica **a estrutura do projeto**, **onde codar**, **o que vai e
 
 ## ✅ O que é este app?
 
-O Jeral Junto é um app de coordenação privada de grupos ("party") em eventos ao vivo (Carnaval), com foco em:
+O Jeral Junto é um app de coordenação privada de grupos ("party") em eventos ao vivo (Carnaval), com foco em uso durante o evento, porém teremos as seguintes features:
 
 - criação e entrada em parties (convite)
 - planos do grupo (o que fazer agora/depois)
 - localização em tempo real (reencontro rápido)
+- botão de pânico em casos de perigo
 
-**Importante:** o MVP agora é mais focado em **uso durante o evento**, então o app precisa ser forte em:
+**Importante:** Não iremos lançar android ou IOS nesse carnaval, mas teremos um site (web) otimizado para mobile que irá **validar nossa ideia**, ou seja, será uma espécie de beta test. O app precisa ser forte em:
 - tempo real
 - rede ruim / instabilidade
 - economia de bateria
 - atualizações frequentes (location + planos)
+- **lidar com as limitações de transferência de dados do pacote free do supabase**
 
 ---
 
 ## 🧰 Pré-requisitos (local)
 
 - Flutter instalado e configurado
-- Android Studio (para emulador Android) ou celular Android com USB debugging
-- Xcode (somente macOS, para rodar iOS)
 - Git
 
 Verificação:
@@ -49,22 +49,6 @@ flutter pub get
 ```bash
 flutter test
 ```
-
-### Rodar no Android (emulador ou device)
-
-1. Ver dispositivos:
-
-```bash
-flutter devices
-```
-
-2. Rodar:
-
-```bash
-flutter run -d <device_id>
-```
-
-> Dica: no Windows, iOS não roda. iOS só em macOS.
 
 ### Atualizar dependências (opcional)
 
@@ -114,26 +98,6 @@ Testes unitários e de widget.
 
 ---
 
-#### `android/` ✅/⚠️ (mexer pouco)
-
-Projeto nativo Android. Normalmente só mexe se:
-
-- configurar permissões (ex.: localização em background)
-- alterar package name
-- adicionar configurações específicas (Firebase, etc.)
-
----
-
-#### `ios/` ✅/⚠️ (mexer pouco, e só no mac)
-
-Projeto nativo iOS. Normalmente só mexe se:
-
-- permissões (ex.: localização "Always")
-- configurações de build / pods
-- capabilities
-
----
-
 #### `build/` ❌ (GERADO)
 
 Artefatos gerados pelo build. Não versionar.
@@ -155,10 +119,7 @@ Config do IntelliJ/Android Studio. Geralmente não versionar.
 #### `web/`, `windows/`, `macos/`, `linux/` ⚠️ (multiplataforma)
 
 Flutter cria suporte a várias plataformas.
-Nosso foco de produto é **Android + iOS**.
-
-- Se o time não vai manter Web/Desktop, pode ignorar.
-- Mas não tem problema existir no repo.
+Nosso foco de produto para a versão beta para esse carnaval é **web**.
 
 ---
 
@@ -408,7 +369,7 @@ flutter test
 ### Branches
 
 - `main`: estável
-- `dev`: integração (opcional)
+- `dev`: integração
 - `feature/<nome>`: features
 - `fix/<nome>`: correções
 
