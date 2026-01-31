@@ -184,7 +184,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
       // const SizedBox(height: 8),
       // Center(
       //   child: Image.asset(
-      //     'web/icons/JJ_logo.png',
+      //     'web/icons/logo_512.png',
       //     width: 200,
       //     height: 200,
       //     fit: BoxFit.contain,
@@ -198,7 +198,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
       ),
       const SizedBox(height: 8),
       const Text(
-        'Cadastre-se com Google, Apple ou email e senha.',
+        'Cadastre-se com Google ou email e senha.',
         style: TextStyle(fontSize: 15, height: 1.5, color: AppColors.muted),
       ),
       const SizedBox(height: 24),
@@ -213,20 +213,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
           ),
           icon: const Icon(Icons.g_mobiledata, size: 28),
           label: const Text('Entrar com Google'),
-        ),
-      ),
-      const SizedBox(height: 14),
-      SizedBox(
-        width: double.infinity,
-        height: 52,
-        child: ElevatedButton.icon(
-          onPressed:
-              _isLoading ? null : () => _signUpWithProvider(OAuthProvider.apple),
-          style: ElevatedButton.styleFrom(
-            backgroundColor: AppColors.apple,
-          ),
-          icon: const Icon(Icons.apple),
-          label: const Text('Entrar com Apple'),
         ),
       ),
       const SizedBox(height: 24),
@@ -266,7 +252,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
       const SizedBox(height: 8),
       Center(
         child: Image.asset(
-          'web/icons/Icon-512.png',
+          'web/icons/logo_512.png',
           width: 180,
           height: 180,
           fit: BoxFit.contain,

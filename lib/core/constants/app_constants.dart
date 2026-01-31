@@ -21,8 +21,6 @@ class AppColors {
   static const Color accent = Color(0xFF6D28D9);    // roxo profundo (mantém nome antigo)
   static const Color primary = accent;              // alias opcional
 
-  // Compatibilidade (login Apple etc.)
-  static const Color apple = Color(0xFF111111);
 }
 
 /// ===============================

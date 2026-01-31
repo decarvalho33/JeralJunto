@@ -46,9 +46,6 @@ class _EmailRegisterScreenState extends State<EmailRegisterScreen> {
     final ready = value.trim().length >= 2;
     if (ready != _nameReady) {
       setState(() => _nameReady = ready);
-      if (ready) {
-        Future.microtask(() => _ageFocus.requestFocus());
-      }
     }
     if (!ready) {
       _resetAfterName();
@@ -60,9 +57,6 @@ class _EmailRegisterScreenState extends State<EmailRegisterScreen> {
     final ready = digits.isNotEmpty;
     if (ready != _ageReady) {
       setState(() => _ageReady = ready);
-      if (ready) {
-        Future.microtask(() => _emailFocus.requestFocus());
-      }
     }
     if (!ready) {
       _resetAfterAge();
@@ -73,9 +67,6 @@ class _EmailRegisterScreenState extends State<EmailRegisterScreen> {
     final ready = value.trim().isNotEmpty;
     if (ready != _emailReady) {
       setState(() => _emailReady = ready);
-      if (ready) {
-        Future.microtask(() => _passwordFocus.requestFocus());
-      }
     }
     if (!ready) {
       _resetAfterEmail();

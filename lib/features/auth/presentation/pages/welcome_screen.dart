@@ -66,7 +66,7 @@ class _WelcomeScreenState extends State<WelcomeScreen>
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Image.asset(
-                        'web/icons/JJ_logo.png',
+                        'web/icons/logo_512.png',
                         width: 220,
                         height: 220,
                         fit: BoxFit.contain,
