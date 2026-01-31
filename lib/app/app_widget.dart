@@ -35,7 +35,7 @@ class AppWidget extends StatelessWidget {
         AppRoutes.home: (_) => const AppShell(),
         AppRoutes.terms: (_) => const TermsScreen(),
       },
-      initialRoute: AppRoutes.welcome,
+      initialRoute: AppRoutes.root,
     );
   }
 }
