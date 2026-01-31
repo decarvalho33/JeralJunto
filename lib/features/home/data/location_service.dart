@@ -3,15 +3,15 @@ import 'dart:async';
 import 'package:geolocator/geolocator.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-import '../domain/entities/party_member_location.dart';
+import 'member_location_model.dart';
 
 class LocationService {
   LocationService({SupabaseClient? client})
       : _client = client ?? Supabase.instance.client;
 
   final SupabaseClient _client;
-  final StreamController<PartyMemberLocation> _updatesController =
-      StreamController<PartyMemberLocation>.broadcast();
+  final StreamController<MemberLocationModel> _updatesController =
+      StreamController<MemberLocationModel>.broadcast();
 
   RealtimeChannel? _channel;
   String? _partyId;
@@ -20,7 +20,7 @@ class LocationService {
   DateTime? _lastPersistedAt;
   RealtimeSubscribeStatus? _lastStatus;
 
-  Stream<PartyMemberLocation> get updates => _updatesController.stream;
+  Stream<MemberLocationModel> get updates => _updatesController.stream;
   RealtimeSubscribeStatus? get lastStatus => _lastStatus;
 
   bool get isChannelHealthy => _channel?.isJoined == true;
@@ -48,7 +48,7 @@ class LocationService {
         .onBroadcast(
           event: 'pos_update',
           callback: (payload) {
-            _updatesController.add(PartyMemberLocation.fromBroadcast(payload));
+            _updatesController.add(MemberLocationModel.fromBroadcast(payload));
           },
         )
         .subscribe((status, error) {
@@ -122,7 +122,7 @@ class LocationService {
     }
   }
 
-  Future<List<PartyMemberLocation>> fetchLastKnownPositions(
+  Future<List<MemberLocationModel>> fetchLastKnownPositions(
     String partyId,
   ) async {
     try {
@@ -151,7 +151,7 @@ class LocationService {
           ...row,
           if (usuario != null) 'nome': usuario['nome'],
         };
-      }).map(PartyMemberLocation.fromDatabase).toList();
+      }).map(MemberLocationModel.fromDatabase).toList();
       if (data.isNotEmpty) {
         return data;
       }
@@ -159,15 +159,15 @@ class LocationService {
       // Table not available yet or RLS; fall back to mock data.
     }
 
-    return <PartyMemberLocation>[
-      PartyMemberLocation(
+    return <MemberLocationModel>[
+      MemberLocationModel(
         userId: 'mock-1',
         name: 'Bia',
         lat: -22.9068,
         lng: -43.1737,
         timestamp: DateTime.now().subtract(const Duration(minutes: 2)),
       ),
-      PartyMemberLocation(
+      MemberLocationModel(
         userId: 'mock-2',
         name: 'Dani',
         lat: -22.9083,

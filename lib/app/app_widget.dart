@@ -6,7 +6,7 @@ import '../features/auth/presentation/pages/login_screen.dart';
 import '../features/auth/presentation/pages/register_screen.dart';
 import '../features/auth/presentation/pages/terms_screen.dart';
 import '../features/auth/presentation/pages/welcome_screen.dart';
-import '../features/home/presentation/pages/home_screen.dart';
+import 'shell/app_shell.dart';
 import 'router/app_routes.dart';
 import 'router/auth_gate.dart';
 
@@ -32,7 +32,7 @@ class AppWidget extends StatelessWidget {
         AppRoutes.register: (_) => const RegisterScreen(),
         AppRoutes.emailRegister: (_) => const EmailRegisterScreen(),
         AppRoutes.login: (_) => const LoginScreen(),
-        AppRoutes.home: (_) => const HomeScreen(),
+        AppRoutes.home: (_) => const AppShell(),
         AppRoutes.terms: (_) => const TermsScreen(),
       },
       initialRoute: AppRoutes.welcome,

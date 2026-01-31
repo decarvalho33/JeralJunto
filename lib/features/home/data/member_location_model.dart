@@ -1,4 +1,4 @@
-class PartyMemberLocation {
+class MemberLocationModel {
   final String userId;
   final String name;
   final double lat;
@@ -6,7 +6,7 @@ class PartyMemberLocation {
   final DateTime timestamp;
   final String? avatarUrl;
 
-  const PartyMemberLocation({
+  const MemberLocationModel({
     required this.userId,
     required this.name,
     required this.lat,
@@ -15,7 +15,7 @@ class PartyMemberLocation {
     this.avatarUrl,
   });
 
-  PartyMemberLocation copyWith({
+  MemberLocationModel copyWith({
     String? userId,
     String? name,
     double? lat,
@@ -23,7 +23,7 @@ class PartyMemberLocation {
     DateTime? timestamp,
     String? avatarUrl,
   }) {
-    return PartyMemberLocation(
+    return MemberLocationModel(
       userId: userId ?? this.userId,
       name: name ?? this.name,
       lat: lat ?? this.lat,
@@ -33,9 +33,9 @@ class PartyMemberLocation {
     );
   }
 
-  factory PartyMemberLocation.fromBroadcast(Map<String, dynamic> payload) {
+  factory MemberLocationModel.fromBroadcast(Map<String, dynamic> payload) {
     final data = payload['payload'] as Map<String, dynamic>? ?? payload;
-    return PartyMemberLocation(
+    return MemberLocationModel(
       userId: data['user_id'] as String? ?? 'unknown',
       name: data['name'] as String? ?? 'Amigo',
       lat: (data['lat'] as num?)?.toDouble() ?? 0,
@@ -46,9 +46,9 @@ class PartyMemberLocation {
     );
   }
 
-  factory PartyMemberLocation.fromDatabase(Map<String, dynamic> data) {
+  factory MemberLocationModel.fromDatabase(Map<String, dynamic> data) {
     final posicao = _parsePosition(data['posicao']);
-    return PartyMemberLocation(
+    return MemberLocationModel(
       userId: data['idusuario'] as String? ?? 'unknown',
       name: data['nome'] as String? ?? 'Amigo',
       lat: posicao?.$1 ?? 0,
@@ -57,6 +57,29 @@ class PartyMemberLocation {
           DateTime.now(),
       avatarUrl: data['avatar_url'] as String?,
     );
+  }
+
+  factory MemberLocationModel.fromJson(Map<String, dynamic> json) {
+    return MemberLocationModel(
+      userId: json['userId'] as String? ?? 'unknown',
+      name: json['name'] as String? ?? 'Amigo',
+      lat: (json['lat'] as num?)?.toDouble() ?? 0,
+      lng: (json['lng'] as num?)?.toDouble() ?? 0,
+      timestamp: DateTime.tryParse(json['timestamp'] as String? ?? '') ??
+          DateTime.now(),
+      avatarUrl: json['avatarUrl'] as String?,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'userId': userId,
+      'name': name,
+      'lat': lat,
+      'lng': lng,
+      'timestamp': timestamp.toIso8601String(),
+      'avatarUrl': avatarUrl,
+    };
   }
 
   static (double, double)? _parsePosition(dynamic raw) {

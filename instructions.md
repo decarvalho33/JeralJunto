@@ -211,17 +211,7 @@ Código reutilizável e "infra".
 
 #### `lib/features/`
 
-Aqui ficam as "partes" do produto separadas por domínio.
-
-Exemplos para nosso MVP:
-
-- `auth/`: login anônimo / magic link / sessão
-- `party/`: criar party, listar membros, regras de acesso
-- `invite/`: convite via link/QR, aceitar convite
-- `plans/`: criar plano do grupo, ver "agora/depois"
-- `location/`: enviar e ver localização em tempo real
-
-> Regra: tudo que é específico de um módulo do produto vai em `features/`.
+Aqui os devs colocam tudo que implementarem pra feature, com recomendação de usar subpastas presentation e data, um modelo simples pra distinguir telas de lógicas.
 
 ---
 

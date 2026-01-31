@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../features/auth/presentation/pages/register_screen.dart';
-import '../../features/home/presentation/pages/home_screen.dart';
+import '../shell/app_shell.dart';
 
 class AuthGate extends StatelessWidget {
   const AuthGate({super.key});
@@ -20,7 +20,7 @@ class AuthGate extends StatelessWidget {
 
         final session = snapshot.data?.session;
         if (session != null) {
-          return const HomeScreen();
+          return const AppShell();
         }
 
         return const RegisterScreen();
