@@ -82,9 +82,13 @@ class _WelcomeScreenState extends State<WelcomeScreen>
                       ),
                       const SizedBox(height: 16),
                       _TermsText(
-                        onTap: () => Navigator.pushNamed(
+                        onTermsTap: () => Navigator.pushNamed(
                           context,
                           AppRoutes.terms,
+                        ),
+                        onPrivacyTap: () => Navigator.pushNamed(
+                          context,
+                          AppRoutes.privacy,
                         ),
                       ),
                     ],
@@ -172,9 +176,13 @@ class _GradientButton extends StatelessWidget {
 }
 
 class _TermsText extends StatelessWidget {
-  const _TermsText({required this.onTap});
+  const _TermsText({
+    required this.onTermsTap,
+    required this.onPrivacyTap,
+  });
 
-  final VoidCallback onTap;
+  final VoidCallback onTermsTap;
+  final VoidCallback onPrivacyTap;
 
   @override
   Widget build(BuildContext context) {
@@ -190,9 +198,24 @@ class _TermsText extends StatelessWidget {
           WidgetSpan(
             alignment: PlaceholderAlignment.middle,
             child: InkWell(
-              onTap: onTap,
+              onTap: onTermsTap,
               child: const Text(
-                'Termos de Uso',
+                'Termos de Serviço',
+                style: TextStyle(
+                  color: AppColors.ink,
+                  fontWeight: FontWeight.w600,
+                  decoration: TextDecoration.underline,
+                ),
+              ),
+            ),
+          ),
+          const TextSpan(text: ' e a '),
+          WidgetSpan(
+            alignment: PlaceholderAlignment.middle,
+            child: InkWell(
+              onTap: onPrivacyTap,
+              child: const Text(
+                'Política de Privacidade',
                 style: TextStyle(
                   color: AppColors.ink,
                   fontWeight: FontWeight.w600,
