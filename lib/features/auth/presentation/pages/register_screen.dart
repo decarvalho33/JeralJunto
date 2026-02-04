@@ -18,6 +18,7 @@ class RegisterScreen extends StatefulWidget {
 class _RegisterScreenState extends State<RegisterScreen> {
   StreamSubscription<AuthState>? _authSubscription;
   bool _isLoading = false;
+  bool _didSyncProfile = false;
 
   @override
   void initState() {
@@ -25,13 +26,19 @@ class _RegisterScreenState extends State<RegisterScreen> {
     _authSubscription =
         Supabase.instance.client.auth.onAuthStateChange.listen((event) {
       final session = event.session;
-      if (session != null && mounted) {
-        setState(() => _isLoading = false);
-        Navigator.pushNamedAndRemoveUntil(
-          context,
-          AppRoutes.home,
-          (_) => false,
-        );
+      if (session != null && !_didSyncProfile) {
+        _didSyncProfile = true;
+        _upsertUserProfile().whenComplete(() {
+          if (!mounted) {
+            return;
+          }
+          setState(() => _isLoading = false);
+          Navigator.pushNamedAndRemoveUntil(
+            context,
+            AppRoutes.home,
+            (_) => false,
+          );
+        });
       }
     });
   }
@@ -68,6 +75,47 @@ class _RegisterScreenState extends State<RegisterScreen> {
     }
   }
 
+  Future<void> _upsertUserProfile() async {
+    final client = Supabase.instance.client;
+    final user = client.auth.currentUser;
+    if (user == null) {
+      return;
+    }
+
+    final metadata = user.userMetadata ?? <String, dynamic>{};
+    final fallbackName = metadata['full_name'] ??
+        metadata['name'] ??
+        metadata['preferred_username'];
+    final fallbackAvatar = metadata['avatar_url'] ??
+        metadata['picture'] ??
+        metadata['photo_url'] ??
+        metadata['avatar'];
+
+    final payload = <String, dynamic>{
+      'id': user.id,
+      'email': user.email,
+    };
+
+    if (fallbackName is String && fallbackName.isNotEmpty) {
+      payload['nome'] = fallbackName;
+    }
+    if (fallbackAvatar is String && fallbackAvatar.isNotEmpty) {
+      payload['avatar_url'] = fallbackAvatar;
+    }
+
+    try {
+      await client.from('Usuario').upsert(payload, onConflict: 'id');
+    } catch (_) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Erro ao salvar perfil.'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../core/constants/app_constants.dart';
 import '../features/auth/presentation/pages/email_register_screen.dart';
 import '../features/auth/presentation/pages/login_screen.dart';
+import '../features/auth/presentation/pages/privacy_screen.dart';
 import '../features/auth/presentation/pages/register_screen.dart';
 import '../features/auth/presentation/pages/terms_screen.dart';
 import '../features/auth/presentation/pages/welcome_screen.dart';
@@ -34,6 +35,7 @@ class AppWidget extends StatelessWidget {
         AppRoutes.login: (_) => const LoginScreen(),
         AppRoutes.home: (_) => const AppShell(),
         AppRoutes.terms: (_) => const TermsScreen(),
+        AppRoutes.privacy: (_) => const PrivacyScreen(),
       },
       initialRoute: AppRoutes.root,
     );
