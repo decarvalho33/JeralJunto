@@ -3,10 +3,12 @@ import 'package:flutter/material.dart';
 class HeaderOverlay extends StatelessWidget {
   const HeaderOverlay({
     super.key,
+    required this.partyName, // ✅ Novo parâmetro obrigatório
     required this.onPartyTap,
     required this.onAvatarTap,
   });
 
+  final String partyName; // ✅ Declaração da variável
   final VoidCallback onPartyTap;
   final VoidCallback onAvatarTap;
 
@@ -18,16 +20,19 @@ class HeaderOverlay extends StatelessWidget {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
+            // Botão de Pânico
             SizedBox(
               width: 56,
               height: 56,
               child: FloatingActionButton(
-              heroTag: 'panic',
-              backgroundColor: Colors.red.shade600,
-              onPressed: () {},
-              child: const Icon(Icons.emergency_share, size: 28),
+                heroTag: 'panic',
+                backgroundColor: Colors.red.shade600,
+                onPressed: () {},
+                child: const Icon(Icons.emergency_share, size: 28),
               ),
             ),
+            
+            // Seletor de Grupo Dinâmico
             Material(
               color: Colors.white,
               borderRadius: BorderRadius.circular(24),
@@ -35,15 +40,17 @@ class HeaderOverlay extends StatelessWidget {
               child: InkWell(
                 borderRadius: BorderRadius.circular(24),
                 onTap: onPartyTap,
-                child: const Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 18, vertical: 12),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
                   child: Text(
-                    'Grupo chique de xique-xique',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
+                    partyName, // ✅ Agora exibe o nome que vem do banco de dados
+                    style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
                   ),
                 ),
               ),
             ),
+            
+            // Avatar do Perfil
             InkResponse(
               onTap: onAvatarTap,
               radius: 26,
