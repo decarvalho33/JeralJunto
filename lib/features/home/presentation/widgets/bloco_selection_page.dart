@@ -57,7 +57,7 @@ class _BlocoSelectionPageState extends State<BlocoSelectionPage> {
           );
         }
       } else {
-        // Tratamento para outros erros de banco (ex: RLS, Timeout)
+        // tratamento para outros erros de banco (ex: RLS, Timeout)
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text("Erro no banco: ${e.message}")),
@@ -65,7 +65,7 @@ class _BlocoSelectionPageState extends State<BlocoSelectionPage> {
         }
       }
     } catch (e) {
-      // Tratamento para erros inesperados
+      // tratamento para erros inesperados
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text("Ocorreu um erro inesperado ao vincular.")),
@@ -85,7 +85,6 @@ class _BlocoSelectionPageState extends State<BlocoSelectionPage> {
             itemBuilder: (context, index) {
               final bloco = _allBlocos[index];
 
-              // 🚀 LÓGICA DE FORMATAÇÃO AQUI
               String dataFormatada = "Data não informada";
               if (bloco['horaInicio'] != null) {
                 final DateTime dt = DateTime.parse(bloco['horaInicio']);

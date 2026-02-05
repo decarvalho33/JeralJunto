@@ -2,15 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class NoPartyOverlay extends StatelessWidget {
-  // ✅ 1. Declare a variável que receberá a função da Home
   final VoidCallback onRefresh;
 
   const NoPartyOverlay({
     super.key, 
-    required this.onRefresh, // ✅ 2. Torne o parâmetro obrigatório
+    required this.onRefresh,
   });
 
-  // Função para mostrar o diálogo de entrada
+  // mostrar o diálogo de entrada
   void _showJoinDialog(BuildContext context) {
     final TextEditingController codeController = TextEditingController();
     final supabase = Supabase.instance.client;
@@ -45,7 +44,7 @@ class NoPartyOverlay extends StatelessWidget {
 
                 if (context.mounted) {
                   Navigator.pop(context);
-                  onRefresh(); // 🚀 3. Chama a função que recarrega a Home
+                  onRefresh(); // chama a função que recarrega a Home
                 }
               } catch (e) {
                 ScaffoldMessenger.of(context).showSnackBar(
@@ -88,7 +87,7 @@ class NoPartyOverlay extends StatelessWidget {
                 width: double.infinity,
                 height: 56,
                 child: ElevatedButton(
-                  onPressed: () { /* Lógica para Criar Party */ },
+                  onPressed: () { /* Lógica para Criar Party provavelmente eduardo */ },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.deepPurple,
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),

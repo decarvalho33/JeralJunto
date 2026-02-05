@@ -1,8 +1,6 @@
 import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-
 import '../../../../core/constants/app_constants.dart';
 import '../../../../app/router/app_routes.dart';
 import '../../domain/entities/register_args.dart';

@@ -3,12 +3,12 @@ import 'package:flutter/material.dart';
 class HeaderOverlay extends StatelessWidget {
   const HeaderOverlay({
     super.key,
-    required this.partyName, // ✅ Novo parâmetro obrigatório
+    required this.partyName,
     required this.onPartyTap,
     required this.onAvatarTap,
   });
 
-  final String partyName; // ✅ Declaração da variável
+  final String partyName;
   final VoidCallback onPartyTap;
   final VoidCallback onAvatarTap;
 
@@ -20,7 +20,7 @@ class HeaderOverlay extends StatelessWidget {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            // Botão de Pânico
+            // botão de panico
             SizedBox(
               width: 56,
               height: 56,
@@ -32,7 +32,7 @@ class HeaderOverlay extends StatelessWidget {
               ),
             ),
             
-            // Seletor de Grupo Dinâmico
+            // seletor de gp dinamico
             Material(
               color: Colors.white,
               borderRadius: BorderRadius.circular(24),
@@ -50,7 +50,7 @@ class HeaderOverlay extends StatelessWidget {
               ),
             ),
             
-            // Avatar do Perfil
+            // avatar do perfil
             InkResponse(
               onTap: onAvatarTap,
               radius: 26,

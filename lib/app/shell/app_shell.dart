@@ -11,7 +11,6 @@ class AppShell extends StatelessWidget {
     return StreamBuilder<AuthState>(
       stream: Supabase.instance.client.auth.onAuthStateChange,
       builder: (context, snapshot) {
-        // Enquanto o Supabase inicializa a conexão
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Scaffold(body: Center(child: CircularProgressIndicator()));
         }
@@ -19,7 +18,6 @@ class AppShell extends StatelessWidget {
         final session = snapshot.data?.session;
 
         if (session != null) {
-          // ✅ Usuário logado: Pode ir para a Home (que vai checar as parties)
           return const HomePage();
         } else {
           return const LoginScreen(); 

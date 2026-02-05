@@ -1,7 +1,6 @@
 // home_page.dart
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-// Certifique-se de que o caminho da PartyScreen está correto
 import '../../../party/presentation/pages/party_screen.dart'; 
 import '../widgets/header_overlay.dart';
 import '../widgets/map_background_placeholder.dart';
@@ -46,7 +45,7 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
-  // Lógica para quando o usuário tiver 2 parties (ver explicação abaixo)
+  // logica para quando o usuário tiver 2 parties
   void _nextParty() {
     if (_userParties.length < 2) return;
     setState(() {
@@ -74,15 +73,15 @@ class _HomePageState extends State<HomePage> {
             left: 0, right: 0, top: 0,
             child: HeaderOverlay(
               partyName: currentParty['nome'],
-              // 🚀 VOLTOU A NAVEGAÇÃO: Agora abre a tela de parties
+              // abre a tela de parties
               onPartyTap: () async {
                 await Navigator.push(
                   context,
                   MaterialPageRoute(builder: (context) => const PartyScreen()),
                 );
-                _loadParties(); // Recarrega caso o usuário tenha saído/entrado em grupos
+                _loadParties(); // recarrega caso o usuário tenha saído/entrado em grupos
               },
-              onAvatarTap: () { /* Menu de Perfil */ },
+              onAvatarTap: () {},
             ),
           ),
         ],
