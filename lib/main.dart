@@ -2,11 +2,17 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+// 1. Importe o inicializador de datas
+import 'package:intl/date_symbol_data_local.dart'; 
 
 import 'app/app_widget.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // 2. Inicialize o suporte ao Português (pt_BR)
+  // Isso carrega os nomes de meses e dias na memória
+  await initializeDateFormatting('pt_BR', null);
 
   if (!kIsWeb) {
     await dotenv.load(fileName: '.env');
