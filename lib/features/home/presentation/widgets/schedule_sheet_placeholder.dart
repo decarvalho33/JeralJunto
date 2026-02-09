@@ -41,7 +41,6 @@ class _ScheduleSheetPlaceholderState extends State<ScheduleSheetPlaceholder> {
     const Color(0xFFFF8C00), const Color(0xFF9400D3), const Color(0xFF00FA9A), 
   ];
 
-  // 🌈 Lógica de 7 cores por coluna
   Color _getWeekdayColor(DateTime date) {
     switch (date.weekday) {
       case DateTime.sunday: return const Color(0xFFFF1493); 
@@ -113,13 +112,12 @@ class _ScheduleSheetPlaceholderState extends State<ScheduleSheetPlaceholder> {
 
   @override
   Widget build(BuildContext context) {
-    // 🚀 Lógica de Minimização (Ajustada para o novo tamanho menor)
     bool isMinimized = _controller.isAttached && _controller.size <= 0.08;
 
     return DraggableScrollableSheet(
       expand: false, 
       controller: _controller,
-      initialChildSize: 0.08, // 🛠️ Diminuído para dar destaque ao mapa
+      initialChildSize: 0.08,
       minChildSize: 0.08, 
       maxChildSize: 0.92, 
       snap: true,
@@ -168,7 +166,7 @@ class _ScheduleSheetPlaceholderState extends State<ScheduleSheetPlaceholder> {
                                       child: Center(child: Text('${day.day}', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)))
                                     );
                                   },
-                                  // 📍 Marcador de Bloco Corrigido: Cor aparente e tamanho maior
+                                  
                                   markerBuilder: (context, day, events) {
                                     if (events.isEmpty) return null;
                                     return Positioned(
@@ -177,7 +175,7 @@ class _ScheduleSheetPlaceholderState extends State<ScheduleSheetPlaceholder> {
                                         width: 6, 
                                         height: 6, 
                                         decoration: const BoxDecoration(
-                                          color: Colors.deepPurple, // 🚀 Roxo para máxima visibilidade
+                                          color: Colors.deepPurple, 
                                           shape: BoxShape.circle
                                         )
                                       )

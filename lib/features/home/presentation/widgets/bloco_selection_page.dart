@@ -16,7 +16,6 @@ class _BlocoSelectionPageState extends State<BlocoSelectionPage> {
   bool _isLoading = true;
   bool _isSaving = false;
 
-  // 🎨 Paleta de Cores de Carnaval para os Cards
   final List<Color> _carnivalColors = [
     const Color(0xFFFF1493), // Rosa Choque
     const Color(0xFF00BFFF), // Azul Elétrico
