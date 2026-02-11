@@ -10,6 +10,7 @@ import '../features/auth/presentation/pages/welcome_screen.dart';
 import 'shell/app_shell.dart';
 import 'router/app_routes.dart';
 import 'router/auth_gate.dart';
+import '../features/party/presentation/utils/party_deep_link_handler.dart';
 
 class AppWidget extends StatelessWidget {
   const AppWidget({super.key});
@@ -37,6 +38,10 @@ class AppWidget extends StatelessWidget {
         AppRoutes.terms: (_) => const TermsScreen(),
         AppRoutes.privacy: (_) => const PrivacyScreen(),
       },
+      onGenerateRoute: PartyDeepLinkHandler.tryBuildRoute,
+      onUnknownRoute: (_) => MaterialPageRoute<void>(
+        builder: (_) => const AuthGate(),
+      ),
       initialRoute: AppRoutes.root,
     );
   }
