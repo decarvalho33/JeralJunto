@@ -82,15 +82,33 @@ class _ScheduleSheetPlaceholderState extends State<ScheduleSheetPlaceholder> {
     try {
       final user = _supabase.auth.currentUser;
       if (user == null) return;
-      final response = await _supabase.from('Party_Bloco').select('id, likes, dislikes, Bloco ( id, nome, bairro, rua, horaInicio ), Bloco_Votos ( voto_tipo )').eq('idParty', widget.idParty).eq('Bloco_Votos.user_id', user.id);
+      
+      final response = await _supabase.from('Party_Bloco').select('''
+        id, likes, dislikes, 
+        Bloco ( id, nome, bairro, rua, horaInicio ), 
+        Bloco_Votos ( voto_tipo, user_id )
+      ''').eq('idParty', widget.idParty)
+         .order('id', ascending: true); // garante que a ordem n muda
+
       final Map<DateTime, List<PartyEvent>> loadedEvents = {};
       for (var row in response as List) {
         final bloco = row['Bloco'];
         if (bloco == null) continue;
+        
+        final List votos = (row['Bloco_Votos'] as List?) ?? [];
+        final meuVotoData = votos.firstWhere((v) => v['user_id'] == user.id, orElse: () => null);
+
         final DateTime start = DateTime.parse(bloco['horaInicio']).toLocal();
-        loadedEvents.putIfAbsent(DateTime.utc(start.year, start.month, start.day), () => []).add(PartyEvent(
-          id: row['id'], title: bloco['nome'] ?? 'Bloco', time: DateFormat("HH:mm").format(start), location: "${bloco['bairro'] ?? ''}",
-          likes: row['likes'] ?? 0, dislikes: row['dislikes'] ?? 0, myVote: (row['Bloco_Votos'] as List).isNotEmpty ? row['Bloco_Votos'][0]['voto_tipo'] : null,
+        final dateKey = DateTime.utc(start.year, start.month, start.day);
+        
+        loadedEvents.putIfAbsent(dateKey, () => []).add(PartyEvent(
+          id: row['id'], 
+          title: bloco['nome'] ?? 'Bloco', 
+          time: DateFormat("HH:mm").format(start), 
+          location: "${bloco['bairro'] ?? ''}",
+          likes: row['likes'] ?? 0, 
+          dislikes: row['dislikes'] ?? 0, 
+          myVote: meuVotoData?['voto_tipo'],
         ));
       }
       if (mounted) setState(() { _events = loadedEvents; _isLoading = false; });
@@ -104,7 +122,10 @@ class _ScheduleSheetPlaceholderState extends State<ScheduleSheetPlaceholder> {
       if (event.myVote == tipo) {
         await _supabase.from('Bloco_Votos').delete().match({'user_id': user.id, 'party_bloco_id': event.id});
       } else {
-        await _supabase.from('Bloco_Votos').upsert({'user_id': user.id, 'party_bloco_id': event.id, 'voto_tipo': tipo}, onConflict: 'user_id,party_bloco_id');
+        await _supabase.from('Bloco_Votos').upsert(
+          {'user_id': user.id, 'party_bloco_id': event.id, 'voto_tipo': tipo},
+          onConflict: 'user_id,party_bloco_id' 
+        );
       }
       await _fetchPartyEvents(); 
     } catch (e) { debugPrint("Erro: $e"); }
@@ -117,9 +138,7 @@ class _ScheduleSheetPlaceholderState extends State<ScheduleSheetPlaceholder> {
     return DraggableScrollableSheet(
       expand: false, 
       controller: _controller,
-      initialChildSize: 0.08,
-      minChildSize: 0.08, 
-      maxChildSize: 0.92, 
+      initialChildSize: 0.08, minChildSize: 0.08, maxChildSize: 0.92, 
       snap: true,
       snapSizes: const [0.08, 0.15, 0.6, 0.92],
       builder: (context, scrollController) {
@@ -149,38 +168,11 @@ class _ScheduleSheetPlaceholderState extends State<ScheduleSheetPlaceholder> {
                                 availableGestures: tc.AvailableGestures.horizontalSwipe, 
                                 eventLoader: (day) => _events[DateTime.utc(day.year, day.month, day.day)] ?? [],
                                 calendarBuilders: tc.CalendarBuilders<PartyEvent>(
-                                  dowBuilder: (context, day) {
-                                    final text = DateFormat.E('pt_BR').format(day);
-                                    return Center(child: Text(text, style: TextStyle(color: _getWeekdayColor(day), fontWeight: FontWeight.bold, fontSize: 12)));
-                                  },
-                                  defaultBuilder: (context, day, focusedDay) {
-                                    return Center(child: Text('${day.day}', style: TextStyle(color: _getWeekdayColor(day), fontWeight: FontWeight.w600)));
-                                  },
-                                  todayBuilder: (context, day, focusedDay) {
-                                    return Container(margin: const EdgeInsets.all(4), decoration: BoxDecoration(color: _getWeekdayColor(day).withOpacity(0.15), shape: BoxShape.circle), child: Center(child: Text('${day.day}', style: TextStyle(color: _getWeekdayColor(day), fontWeight: FontWeight.bold))));
-                                  },
-                                  selectedBuilder: (context, day, focusedDay) {
-                                    return Container(
-                                      margin: const EdgeInsets.all(4), 
-                                      decoration: BoxDecoration(color: _getWeekdayColor(day), shape: BoxShape.circle), 
-                                      child: Center(child: Text('${day.day}', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)))
-                                    );
-                                  },
-                                  
-                                  markerBuilder: (context, day, events) {
-                                    if (events.isEmpty) return null;
-                                    return Positioned(
-                                      bottom: 5, 
-                                      child: Container(
-                                        width: 6, 
-                                        height: 6, 
-                                        decoration: const BoxDecoration(
-                                          color: Colors.deepPurple, 
-                                          shape: BoxShape.circle
-                                        )
-                                      )
-                                    );
-                                  },
+                                  dowBuilder: (context, day) => Center(child: Text(DateFormat.E('pt_BR').format(day), style: TextStyle(color: _getWeekdayColor(day), fontWeight: FontWeight.bold, fontSize: 12))),
+                                  defaultBuilder: (context, day, focusedDay) => Center(child: Text('${day.day}', style: TextStyle(color: _getWeekdayColor(day), fontWeight: FontWeight.w600))),
+                                  todayBuilder: (context, day, focusedDay) => Container(margin: const EdgeInsets.all(4), decoration: BoxDecoration(color: _getWeekdayColor(day).withOpacity(0.15), shape: BoxShape.circle), child: Center(child: Text('${day.day}', style: TextStyle(color: _getWeekdayColor(day), fontWeight: FontWeight.bold)))),
+                                  selectedBuilder: (context, day, focusedDay) => Container(margin: const EdgeInsets.all(4), decoration: BoxDecoration(color: _getWeekdayColor(day), shape: BoxShape.circle), child: Center(child: Text('${day.day}', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)))),
+                                  markerBuilder: (context, day, events) => events.isEmpty ? null : Positioned(bottom: 5, child: Container(width: 6, height: 6, decoration: const BoxDecoration(color: Colors.deepPurple, shape: BoxShape.circle))),
                                 ),
                                 headerStyle: const tc.HeaderStyle(formatButtonVisible: false, titleCentered: true, titleTextStyle: TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: Colors.deepPurple)),
                                 onDaySelected: (selectedDay, focusedDay) => setState(() { _selectedDay = selectedDay; _focusedDay = focusedDay; }),
@@ -209,13 +201,32 @@ class _ScheduleSheetPlaceholderState extends State<ScheduleSheetPlaceholder> {
       if (events.isEmpty) return const Padding(padding: EdgeInsets.all(40), child: Center(child: Text("Nenhum bloco agendado")));
       final event = events[index];
       final Color themeColor = _carnivalColors[index % _carnivalColors.length];
+      
       return Container(
+        key: ValueKey(event.id),
         margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16), boxShadow: [BoxShadow(color: themeColor.withOpacity(0.15), blurRadius: 10, offset: const Offset(0, 4))]),
         child: ClipRRect(
           borderRadius: BorderRadius.circular(16),
           child: IntrinsicHeight(
-            child: Row(children: [Container(width: 6, color: themeColor), Expanded(child: Padding(padding: const EdgeInsets.all(12), child: Row(children: [CircleAvatar(backgroundColor: themeColor.withOpacity(0.1), child: Icon(event.icon, color: themeColor, size: 20)), const SizedBox(width: 12), Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text(event.title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)), Text("${event.time} • ${event.location}", style: TextStyle(color: Colors.grey[600], fontSize: 13))])), Row(children: [_voteBtn(event, 'like', "❤️", event.likes, themeColor), const SizedBox(width: 12), _voteBtn(event, 'dislike', "👎", event.dislikes, Colors.orange)])])))],),
+            child: Row(
+              children: [
+                Container(width: 6, color: themeColor),
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.all(12),
+                    child: Row(
+                      children: [
+                        CircleAvatar(backgroundColor: themeColor.withOpacity(0.1), child: Icon(event.icon, color: themeColor, size: 20)),
+                        const SizedBox(width: 12),
+                        Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text(event.title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)), Text("${event.time} • ${event.location}", style: TextStyle(color: Colors.grey[600], fontSize: 13))])),
+                        Row(children: [_voteBtn(event, 'like', "❤️", event.likes, Colors.red), const SizedBox(width: 12), _voteBtn(event, 'dislike', "👎", event.dislikes, Colors.orange)]),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       );
@@ -224,7 +235,15 @@ class _ScheduleSheetPlaceholderState extends State<ScheduleSheetPlaceholder> {
 
   Widget _voteBtn(PartyEvent event, String tipo, String emoji, int count, Color activeColor) {
     bool isSel = event.myVote == tipo;
-    return GestureDetector(onTap: () => _vote(event, tipo), child: Column(children: [AnimatedScale(scale: isSel ? 1.3 : 1.0, duration: const Duration(milliseconds: 200), child: Opacity(opacity: (event.myVote != null && !isSel) ? 0.3 : 1.0, child: Text(emoji, style: const TextStyle(fontSize: 18)))), Text("$count", style: TextStyle(fontWeight: isSel ? FontWeight.bold : FontWeight.normal, fontSize: 11, color: isSel ? activeColor : Colors.black54))]));
+    return GestureDetector(
+      onTap: () => _vote(event, tipo), 
+      child: Column(
+        children: [
+          AnimatedScale(scale: isSel ? 1.3 : 1.0, duration: const Duration(milliseconds: 200), child: Opacity(opacity: (event.myVote != null && !isSel) ? 0.3 : 1.0, child: Text(emoji, style: const TextStyle(fontSize: 18)))),
+          Text("$count", style: TextStyle(fontWeight: isSel ? FontWeight.bold : FontWeight.normal, fontSize: 11, color: isSel ? activeColor : Colors.black54))
+        ]
+      )
+    );
   }
 
   Widget _buildHandle() => GestureDetector(onTap: () => _controller.animateTo(_controller.size > 0.28 ? 0.08 : 0.92, duration: const Duration(milliseconds: 300), curve: Curves.easeInOut), child: Container(width: double.infinity, padding: const EdgeInsets.symmetric(vertical: 12), color: Colors.transparent, child: Center(child: Container(width: 45, height: 5, decoration: BoxDecoration(color: Colors.grey[300], borderRadius: BorderRadius.circular(10))))));
