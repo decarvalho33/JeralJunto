@@ -1,14 +1,15 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class PartyQueries {
-  static const String partyFields = 'id, nome, idCriador, join_code, created_at';
+  static const String partyFields =
+      'id, nome, idCriador, join_code, requires_approval, created_at';
   static const String memberFields =
       'idParty, idUsuario, cargo, created_at, Usuario(nome, avatar_url)';
 }
 
 class PartyRemoteDataSource {
   PartyRemoteDataSource({SupabaseClient? client})
-      : _client = client ?? Supabase.instance.client;
+    : _client = client ?? Supabase.instance.client;
 
   final SupabaseClient _client;
 
@@ -37,11 +38,7 @@ class PartyRemoteDataSource {
         .from('Party_Usuario')
         .select(PartyQueries.memberFields)
         .eq('idParty', partyId);
-
-    if (response is List) {
-      return response.cast<Map<String, dynamic>>();
-    }
-    return [];
+    return response.cast<Map<String, dynamic>>();
   }
 
   Future<int?> fetchLatestPartyIdForUser(String userId) async {
@@ -53,7 +50,7 @@ class PartyRemoteDataSource {
           .order('created_at', ascending: false)
           .limit(1);
 
-      if (membership is List && membership.isNotEmpty) {
+      if (membership.isNotEmpty) {
         return _parseInt(membership.first['idParty']);
       }
     } catch (_) {
@@ -67,7 +64,7 @@ class PartyRemoteDataSource {
         .order('created_at', ascending: false)
         .limit(1);
 
-    if (ownerParty is List && ownerParty.isNotEmpty) {
+    if (ownerParty.isNotEmpty) {
       return _parseInt(ownerParty.first['id']);
     }
 
@@ -80,15 +77,13 @@ class PartyRemoteDataSource {
       throw StateError('Usuário não autenticado');
     }
 
-    await _client.from('Party_Usuario').upsert(
-      {
-        'idParty': partyId,
-        'idUsuario': user.id,
-        'cargo': 'user',
-      },
-      onConflict: 'idParty,idUsuario',
-      ignoreDuplicates: true,
-    );
+    await _client
+        .from('Party_Usuario')
+        .upsert(
+          {'idParty': partyId, 'idUsuario': user.id, 'cargo': 'user'},
+          onConflict: 'idParty,idUsuario',
+          ignoreDuplicates: true,
+        );
   }
 }
 

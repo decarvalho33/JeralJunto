@@ -8,8 +8,8 @@ import '../../domain/usecases/join_party.dart';
 
 class JoinPartyController extends ChangeNotifier {
   JoinPartyController({required PartyRepository repository})
-      : _getPartyByCode = GetPartyByCode(repository),
-        _joinParty = JoinParty(repository);
+    : _getPartyByCode = GetPartyByCode(repository),
+      _joinParty = JoinParty(repository);
 
   final GetPartyByCode _getPartyByCode;
   final JoinParty _joinParty;
@@ -36,6 +36,10 @@ class JoinPartyController extends ChangeNotifier {
       final party = await _getPartyByCode(normalized);
       if (party == null) {
         _errorMessage = 'Código inválido';
+        return null;
+      }
+      if (party.requiresApproval) {
+        _errorMessage = 'Esta party exige aprovação de um administrador';
         return null;
       }
       await _joinParty(party.id);

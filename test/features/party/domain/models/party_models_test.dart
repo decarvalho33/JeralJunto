@@ -9,6 +9,7 @@ void main() {
       'id': 10,
       'nome': 'Bloco',
       'join_code': 'ab12c3',
+      'requires_approval': true,
       'created_at': '2025-01-01T12:00:00Z',
       'idCriador': 'user-1',
     });
@@ -16,6 +17,7 @@ void main() {
     expect(party.id, 10);
     expect(party.nome, 'Bloco');
     expect(party.joinCode, 'AB12C3');
+    expect(party.requiresApproval, isTrue);
     expect(party.idCriador, 'user-1');
   });
 
