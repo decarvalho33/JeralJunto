@@ -348,10 +348,6 @@ class _PartyScreenState extends State<PartyScreen> {
                       members: _controller.members,
                       currentUserId: currentUserId,
                     ),
-                    const SizedBox(height: 20),
-                    const PartyRulesCard(),
-                    const SizedBox(height: 16),
-                    const SafetyTipsCard(),
                     const SizedBox(height: 22),
                     OutlinedButton.icon(
                       onPressed: party.idCriador == currentUserId

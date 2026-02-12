@@ -60,17 +60,11 @@ class PartyConfigHeroCard extends StatelessWidget {
   const PartyConfigHeroCard({
     super.key,
     required this.name,
-    required this.roleLabel,
-    required this.requiresApproval,
-    required this.locationSharingEnabled,
     required this.memberCount,
     required this.createdLabel,
   });
 
   final String name;
-  final String roleLabel;
-  final bool requiresApproval;
-  final bool locationSharingEnabled;
   final int memberCount;
   final String createdLabel;
 
@@ -88,35 +82,6 @@ class PartyConfigHeroCard extends StatelessWidget {
             fontWeight: FontWeight.w800,
             letterSpacing: -0.4,
           ),
-        ),
-        const SizedBox(height: 12),
-        Wrap(
-          spacing: 8,
-          runSpacing: 8,
-          children: [
-            _InfoChip(
-              icon: Icons.verified_outlined,
-              label: roleLabel,
-              background: cs.primary.withOpacity(0.08),
-              foreground: cs.primary,
-              borderColor: cs.primary.withOpacity(0.2),
-            ),
-            _InfoChip(
-              icon: Icons.lock_outline,
-              label: requiresApproval ? 'Fechada' : 'Aberta',
-              background: cs.surfaceVariant,
-              foreground: cs.onSurfaceVariant,
-              borderColor: cs.outlineVariant,
-            ),
-            _InfoChip(
-              icon: Icons.location_on_outlined,
-              label:
-                  locationSharingEnabled ? 'Localização ativa' : 'Localização inativa',
-              background: cs.tertiary.withOpacity(0.1),
-              foreground: cs.tertiary,
-              borderColor: cs.tertiary.withOpacity(0.2),
-            ),
-          ],
         ),
         const SizedBox(height: 12),
         Text(
