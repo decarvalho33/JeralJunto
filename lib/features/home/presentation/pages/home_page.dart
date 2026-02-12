@@ -344,7 +344,10 @@ class _HomePageState extends ConsumerState<HomePage> {
       return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
     if (_userParties.isEmpty) {
-      return NoPartyOverlay(onRefresh: _loadParties);
+      return NoPartyOverlay(
+        onRefresh: _loadParties,
+        onAvatarTap: () => _openProfileMenu(context),
+      );
     }
 
     final currentParty = _userParties[_currentIndex];

@@ -4,6 +4,13 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:intl/intl.dart'; 
 import 'bloco_selection_page.dart';
 
+class VoterProfile {
+  final String name;
+  final String? avatarUrl;
+  final String type;
+  VoterProfile({required this.name, this.avatarUrl, required this.type});
+}
+
 class PartyEvent {
   final int id; 
   final String title;
@@ -13,11 +20,12 @@ class PartyEvent {
   int likes;
   int dislikes;
   String? myVote;
+  final List<VoterProfile> voters; 
 
   PartyEvent({
     required this.id, required this.title, required this.time, 
     required this.location, required this.likes, required this.dislikes,
-    this.myVote, this.icon = Icons.celebration
+    required this.voters, this.myVote, this.icon = Icons.celebration
   });
 }
 
@@ -68,7 +76,7 @@ class _ScheduleSheetPlaceholderState extends State<ScheduleSheetPlaceholder> {
     _selectedDay = _sextaCarnaval;
     _fetchPartyEvents();
     _controller.addListener(() {
-      if (!mounted) return;
+      if (!mounted || !_controller.isAttached) return;
       double size = _controller.size;
       if (size > 0.6 && _calendarFormat == tc.CalendarFormat.week) setState(() => _calendarFormat = tc.CalendarFormat.month);
       else if (size <= 0.6 && _calendarFormat == tc.CalendarFormat.month) setState(() => _calendarFormat = tc.CalendarFormat.week);
@@ -86,29 +94,36 @@ class _ScheduleSheetPlaceholderState extends State<ScheduleSheetPlaceholder> {
       final response = await _supabase.from('Party_Bloco').select('''
         id, likes, dislikes, 
         Bloco ( id, nome, bairro, rua, horaInicio ), 
-        Bloco_Votos ( voto_tipo, user_id )
-      ''').eq('idParty', widget.idParty)
-         .order('id', ascending: true); // garante que a ordem n muda
+        Bloco_Votos ( voto_tipo, user_id, Usuario ( nome, avatar_url ) )
+      ''').eq('idParty', widget.idParty).order('id', ascending: true);
 
       final Map<DateTime, List<PartyEvent>> loadedEvents = {};
       for (var row in response as List) {
         final bloco = row['Bloco'];
         if (bloco == null) continue;
         
-        final List votos = (row['Bloco_Votos'] as List?) ?? [];
-        final meuVotoData = votos.firstWhere((v) => v['user_id'] == user.id, orElse: () => null);
+        final List votosRaw = (row['Bloco_Votos'] as List?) ?? [];
+        final List<VoterProfile> voters = [];
+        String? meuVoto;
+
+        for (var v in votosRaw) {
+          if (v['user_id'] == user.id) meuVoto = v['voto_tipo'];
+          final profile = v['Usuario'];
+          if (profile != null) {
+            voters.add(VoterProfile(
+              name: profile['nome'] ?? 'Membro',
+              avatarUrl: profile['avatar_url'],
+              type: v['voto_tipo'],
+            ));
+          }
+        }
 
         final DateTime start = DateTime.parse(bloco['horaInicio']).toLocal();
         final dateKey = DateTime.utc(start.year, start.month, start.day);
         
         loadedEvents.putIfAbsent(dateKey, () => []).add(PartyEvent(
-          id: row['id'], 
-          title: bloco['nome'] ?? 'Bloco', 
-          time: DateFormat("HH:mm").format(start), 
-          location: "${bloco['bairro'] ?? ''}",
-          likes: row['likes'] ?? 0, 
-          dislikes: row['dislikes'] ?? 0, 
-          myVote: meuVotoData?['voto_tipo'],
+          id: row['id'], title: bloco['nome'] ?? 'Bloco', time: DateFormat("HH:mm").format(start), location: "${bloco['bairro'] ?? ''}",
+          likes: row['likes'] ?? 0, dislikes: row['dislikes'] ?? 0, myVote: meuVoto, voters: voters,
         ));
       }
       if (mounted) setState(() { _events = loadedEvents; _isLoading = false; });
@@ -136,10 +151,8 @@ class _ScheduleSheetPlaceholderState extends State<ScheduleSheetPlaceholder> {
     bool isMinimized = _controller.isAttached && _controller.size <= 0.08;
 
     return DraggableScrollableSheet(
-      expand: false, 
-      controller: _controller,
-      initialChildSize: 0.08, minChildSize: 0.08, maxChildSize: 0.92, 
-      snap: true,
+      expand: false, controller: _controller,
+      initialChildSize: 0.08, minChildSize: 0.08, maxChildSize: 0.92, snap: true,
       snapSizes: const [0.08, 0.15, 0.6, 0.92],
       builder: (context, scrollController) {
         return Container(
@@ -155,18 +168,14 @@ class _ScheduleSheetPlaceholderState extends State<ScheduleSheetPlaceholder> {
                       physics: const AlwaysScrollableScrollPhysics(parent: BouncingScrollPhysics()),
                       slivers: [
                         if (isMinimized)
-                          const SliverFillRemaining(
-                            hasScrollBody: false,
-                            child: Center(child: Text("Calendário de Eventos", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Colors.deepPurple))),
-                          )
+                          const SliverFillRemaining(hasScrollBody: false, child: Center(child: Text("Calendário de Eventos", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Colors.deepPurple))))
                         else ...[
                           SliverToBoxAdapter(
                             child: _isLoading ? const Padding(padding: EdgeInsets.all(20), child: Center(child: CircularProgressIndicator()))
                             : tc.TableCalendar<PartyEvent>(
                                 locale: 'pt_BR', firstDay: _inicioFevereiro, lastDay: _fimFevereiro, focusedDay: _focusedDay,
                                 selectedDayPredicate: (day) => tc.isSameDay(_selectedDay, day), calendarFormat: _calendarFormat,
-                                availableGestures: tc.AvailableGestures.horizontalSwipe, 
-                                eventLoader: (day) => _events[DateTime.utc(day.year, day.month, day.day)] ?? [],
+                                availableGestures: tc.AvailableGestures.horizontalSwipe, eventLoader: (day) => _events[DateTime.utc(day.year, day.month, day.day)] ?? [],
                                 calendarBuilders: tc.CalendarBuilders<PartyEvent>(
                                   dowBuilder: (context, day) => Center(child: Text(DateFormat.E('pt_BR').format(day), style: TextStyle(color: _getWeekdayColor(day), fontWeight: FontWeight.bold, fontSize: 12))),
                                   defaultBuilder: (context, day, focusedDay) => Center(child: Text('${day.day}', style: TextStyle(color: _getWeekdayColor(day), fontWeight: FontWeight.w600))),
@@ -215,12 +224,24 @@ class _ScheduleSheetPlaceholderState extends State<ScheduleSheetPlaceholder> {
                 Expanded(
                   child: Padding(
                     padding: const EdgeInsets.all(12),
-                    child: Row(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        CircleAvatar(backgroundColor: themeColor.withOpacity(0.1), child: Icon(event.icon, color: themeColor, size: 20)),
-                        const SizedBox(width: 12),
-                        Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text(event.title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)), Text("${event.time} • ${event.location}", style: TextStyle(color: Colors.grey[600], fontSize: 13))])),
-                        Row(children: [_voteBtn(event, 'like', "❤️", event.likes, Colors.red), const SizedBox(width: 12), _voteBtn(event, 'dislike', "👎", event.dislikes, Colors.orange)]),
+                        Row(
+                          children: [
+                            CircleAvatar(backgroundColor: themeColor.withOpacity(0.1), child: Icon(event.icon, color: themeColor, size: 20)),
+                            const SizedBox(width: 12),
+                            Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text(event.title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)), Text("${event.time} • ${event.location}", style: TextStyle(color: Colors.grey[600], fontSize: 13))])),
+                            Row(children: [_voteBtn(event, 'like', "❤️", event.likes, Colors.red), const SizedBox(width: 12), _voteBtn(event, 'dislike', "👎", event.dislikes, Colors.orange)]),
+                          ],
+                        ),
+                        
+                        if (event.voters.isNotEmpty) ...[
+                          const SizedBox(height: 8),
+                          _buildReactionRow(event.voters, 'like', "❤️"),
+                          const SizedBox(height: 4),
+                          _buildReactionRow(event.voters, 'dislike', "👎"),
+                        ],
                       ],
                     ),
                   ),
@@ -231,6 +252,86 @@ class _ScheduleSheetPlaceholderState extends State<ScheduleSheetPlaceholder> {
         ),
       );
     }, childCount: events.isEmpty ? 1 : events.length));
+  }
+
+  Widget _buildReactionRow(List<VoterProfile> voters, String type, String emoji) {
+    final filtered = voters.where((v) => v.type == type).toList();
+    if (filtered.isEmpty) return const SizedBox.shrink();
+    return GestureDetector(
+      onTap: () => _showVotersList(filtered, type), 
+      child: Row(
+        children: [
+          Text(emoji, style: const TextStyle(fontSize: 12)),
+          const SizedBox(width: 8),
+          _buildAvatarStack(filtered),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildAvatarStack(List<VoterProfile> voters) {
+    final displayLimit = 3; // Mostra 3 fotos + icone clicavel pra aparecer a lista
+    final hasMore = voters.length > displayLimit;
+    final limitedVoters = voters.take(displayLimit).toList();
+
+    return SizedBox(
+      height: 20,
+      width: (limitedVoters.length * 14.0) + (hasMore ? 22 : 10),
+      child: Stack(
+        children: [
+          ...List.generate(limitedVoters.length, (index) {
+            return Positioned(
+              left: index * 12.0,
+              child: _avatarCircle(limitedVoters[index].avatarUrl),
+            );
+          }),
+          if (hasMore)
+            Positioned(
+              left: displayLimit * 12.0,
+              child: CircleAvatar(
+                radius: 9,
+                backgroundColor: Colors.grey[300],
+                child: Text("+${voters.length - displayLimit}", style: const TextStyle(fontSize: 7, fontWeight: FontWeight.bold, color: Colors.black87)),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  // lista completa de nomes e fotos das reacoes
+  void _showVotersList(List<VoterProfile> voters, String type) {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(24))),
+      builder: (context) {
+        return Container(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(type == 'like' ? "Tô on" : "Tô fora", style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+              const SizedBox(height: 16),
+              Flexible(
+                child: ListView.builder(
+                  shrinkWrap: true,
+                  itemCount: voters.length,
+                  itemBuilder: (context, index) => ListTile(
+                    leading: _avatarCircle(voters[index].avatarUrl, radius: 16),
+                    title: Text(voters[index].name, style: const TextStyle(fontWeight: FontWeight.w500)),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _avatarCircle(String? url, {double radius = 9}) {
+    return CircleAvatar(radius: radius + 1, backgroundColor: Colors.white, child: CircleAvatar(radius: radius, backgroundImage: url != null ? NetworkImage(url) : null, child: url == null ? Icon(Icons.person, size: radius) : null));
   }
 
   Widget _voteBtn(PartyEvent event, String tipo, String emoji, int count, Color activeColor) {
@@ -246,5 +347,8 @@ class _ScheduleSheetPlaceholderState extends State<ScheduleSheetPlaceholder> {
     );
   }
 
-  Widget _buildHandle() => GestureDetector(onTap: () => _controller.animateTo(_controller.size > 0.28 ? 0.08 : 0.92, duration: const Duration(milliseconds: 300), curve: Curves.easeInOut), child: Container(width: double.infinity, padding: const EdgeInsets.symmetric(vertical: 12), color: Colors.transparent, child: Center(child: Container(width: 45, height: 5, decoration: BoxDecoration(color: Colors.grey[300], borderRadius: BorderRadius.circular(10))))));
+  Widget _buildHandle() => GestureDetector(onTap: () {
+    if (!_controller.isAttached) return;
+    _controller.animateTo(_controller.size > 0.28 ? 0.08 : 0.92, duration: const Duration(milliseconds: 300), curve: Curves.easeInOut);
+  }, child: Container(width: double.infinity, padding: const EdgeInsets.symmetric(vertical: 12), color: Colors.transparent, child: Center(child: Container(width: 45, height: 5, decoration: BoxDecoration(color: Colors.grey[300], borderRadius: BorderRadius.circular(10))))));
 }

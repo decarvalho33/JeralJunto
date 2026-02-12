@@ -7,4 +7,5 @@ class AppRoutes {
   static const String home = '/home';
   static const String terms = '/terms';
   static const String privacy = '/privacy';
+  static const String joinParty = '/join';
 }
