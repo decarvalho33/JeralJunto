@@ -598,10 +598,6 @@ class _PartyConfigScreenState extends State<PartyConfigScreen>
   Widget _buildContent(BuildContext context, PartyConfigData data) {
     final createdLabel = _formatDate(data.createdAt);
     final creatorLabel = _resolveCreatorLabel(data);
-    final roleLabel = data.isCreator
-        ? 'Criador'
-        : (data.isAdmin ? 'Admin' : 'Membro');
-
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -609,9 +605,6 @@ class _PartyConfigScreenState extends State<PartyConfigScreen>
           name: _viewModel.draftName.isNotEmpty
               ? _viewModel.draftName
               : data.name,
-          roleLabel: roleLabel,
-          requiresApproval: _viewModel.draftRequiresApproval,
-          locationSharingEnabled: _viewModel.draftLocationSharing,
           memberCount: data.memberCount,
           createdLabel: createdLabel,
         ),
@@ -637,21 +630,6 @@ class _PartyConfigScreenState extends State<PartyConfigScreen>
           canRotate: data.canRotateCode,
           isRotating: _viewModel.isRotatingCode,
         ),
-        if (data.canManageMembers) ...[
-          const SizedBox(height: 20),
-          const SectionHeader(
-            title: 'Privacidade e acesso',
-            subtitle:
-                'Controle como novos membros entram e compartilham localização.',
-          ),
-          PrivacyAccessSectionCard(
-            requiresApproval: _viewModel.draftRequiresApproval,
-            locationSharingEnabled: _viewModel.draftLocationSharing,
-            onRequiresApprovalChanged: _viewModel.updateDraftRequiresApproval,
-            onLocationSharingChanged: _viewModel.updateDraftLocationSharing,
-            isSaving: _viewModel.isApplyingChanges,
-          ),
-        ],
         if (data.canManageMembers || data.canTransferCreator) ...[
           const SizedBox(height: 20),
           MembersRolesSectionCard(
