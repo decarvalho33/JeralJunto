@@ -634,9 +634,6 @@ class _ScheduleSheetPlaceholderState
     bool canVote = true,
   }) {
     final startStr = DateFormat("HH:mm").format(event.start);
-    final endStr = event.end == null
-        ? "Não informado"
-        : DateFormat("HH:mm").format(event.end!);
     final location = event.location.isEmpty
         ? "Local não informado"
         : event.location;
@@ -714,11 +711,11 @@ class _ScheduleSheetPlaceholderState
                           ],
                         ),
                         const SizedBox(height: 12),
-                        Row(
-                          children: [
-                            Expanded(
-                              child: SizedBox(
-                                height: 96,
+                        IntrinsicHeight(
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: [
+                              Expanded(
                                 child: _buildInfoSquare(
                                   label: "Horário",
                                   color: themeColor,
@@ -734,30 +731,19 @@ class _ScheduleSheetPlaceholderState
                                           fontWeight: FontWeight.w700,
                                         ),
                                       ),
-                                      const SizedBox(height: 8),
-                                      Text(
-                                        "Término: $endStr",
-                                        style: const TextStyle(
-                                          fontSize: 14,
-                                          fontWeight: FontWeight.w700,
-                                        ),
-                                      ),
                                     ],
                                   ),
                                 ),
                               ),
-                            ),
-                            const SizedBox(width: 10),
-                            Expanded(
-                              child: SizedBox(
-                                height: 96,
+                              const SizedBox(width: 10),
+                              Expanded(
                                 child: _buildInfoSquare(
                                   label: "Lugar",
                                   color: Colors.deepPurple,
                                   child: Center(
                                     child: Text(
                                       location,
-                                      maxLines: 2,
+                                      maxLines: 4,
                                       overflow: TextOverflow.ellipsis,
                                       textAlign: TextAlign.center,
                                       style: const TextStyle(
@@ -768,8 +754,8 @@ class _ScheduleSheetPlaceholderState
                                   ),
                                 ),
                               ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
                       ],
                     ),

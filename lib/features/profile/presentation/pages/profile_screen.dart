@@ -5,6 +5,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/widgets/user_avatar.dart';
 import '../../../auth/presentation/providers/user_profile_provider.dart';
+import 'edit_profile_screen.dart';
 
 class ProfileScreen extends ConsumerWidget {
   const ProfileScreen({super.key});
@@ -83,23 +84,20 @@ class ProfileScreen extends ConsumerWidget {
                 label: 'Email',
                 value: displayEmail,
               ),
-              const SizedBox(height: 12),
-              _InfoTile(
-                icon: Icons.fingerprint,
-                label: 'ID do usuário',
-                value: user?.id ?? 'Não disponível',
-                smallValue: true,
-              ),
               const SizedBox(height: 18),
               OutlinedButton.icon(
-                onPressed: () {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text(
-                        'Edição de perfil será disponibilizada em breve.',
+                onPressed: () async {
+                  final updated = await Navigator.of(context).push<bool>(
+                    MaterialPageRoute(
+                      builder: (_) => EditProfileScreen(
+                        initialName: name,
+                        initialAvatarUrl: profile?.avatarUrl,
                       ),
                     ),
                   );
+                  if (updated == true) {
+                    ref.invalidate(userProfileProvider);
+                  }
                 },
                 icon: const Icon(Icons.edit_outlined),
                 label: const Text('Editar perfil'),
@@ -167,13 +165,11 @@ class _InfoTile extends StatelessWidget {
     required this.icon,
     required this.label,
     required this.value,
-    this.smallValue = false,
   });
 
   final IconData icon;
   final String label;
   final String value;
-  final bool smallValue;
 
   @override
   Widget build(BuildContext context) {
@@ -201,7 +197,7 @@ class _InfoTile extends StatelessWidget {
                 Text(
                   value,
                   style: TextStyle(
-                    fontSize: smallValue ? 12 : 16,
+                    fontSize: 16,
                     fontWeight: FontWeight.w600,
                     color: AppColors.ink,
                   ),

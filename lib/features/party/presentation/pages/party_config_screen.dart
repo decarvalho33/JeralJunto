@@ -234,27 +234,26 @@ class _PartyConfigScreenState extends State<PartyConfigScreen>
       return;
     }
 
-    final confirmed = await PostFrameActions.showDialogPostFrame<bool>(
+    final confirmed = await PostFrameActions.showDialogPostFrame<bool>(context, (
       context,
-      (context) {
-        return AlertDialog(
-          title: const Text('Gerar novo código?'),
-          content: const Text(
-            'O código atual deixará de funcionar. Compartilhe o novo com o grupo.',
+    ) {
+      return AlertDialog(
+        title: const Text('Gerar novo código?'),
+        content: const Text(
+          'O código atual deixará de funcionar. Compartilhe o novo com o grupo.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text('Cancelar'),
           ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(false),
-              child: const Text('Cancelar'),
-            ),
-            ElevatedButton(
-              onPressed: () => Navigator.of(context).pop(true),
-              child: const Text('Gerar'),
-            ),
-          ],
-        );
-      },
-    );
+          ElevatedButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            child: const Text('Gerar'),
+          ),
+        ],
+      );
+    });
 
     if (confirmed != true) {
       return;
@@ -355,7 +354,8 @@ class _PartyConfigScreenState extends State<PartyConfigScreen>
                   itemCount: eligible.length,
                   itemBuilder: (context, index) {
                     final member = eligible[index];
-                    final avatar = (member.avatarUrl != null &&
+                    final avatar =
+                        (member.avatarUrl != null &&
                             member.avatarUrl!.isNotEmpty)
                         ? NetworkImage(member.avatarUrl!)
                         : null;
@@ -365,13 +365,17 @@ class _PartyConfigScreenState extends State<PartyConfigScreen>
                         child: avatar == null
                             ? Text(
                                 member.displayLabel.isNotEmpty
-                                    ? member.displayLabel.substring(0, 1).toUpperCase()
+                                    ? member.displayLabel
+                                          .substring(0, 1)
+                                          .toUpperCase()
                                     : '?',
                               )
                             : null,
                       ),
                       title: Text(member.displayLabel),
-                      subtitle: Text(member.role == 'admin' ? 'Admin' : 'Membro'),
+                      subtitle: Text(
+                        member.role == 'admin' ? 'Admin' : 'Membro',
+                      ),
                       onTap: () => Navigator.of(context).pop(member),
                     );
                   },
@@ -429,10 +433,7 @@ class _PartyConfigScreenState extends State<PartyConfigScreen>
     final cs = Theme.of(context).colorScheme;
     PostFrameActions.showSnackBar(
       context,
-      SnackBar(
-        content: Text(message),
-        backgroundColor: cs.surface,
-      ),
+      SnackBar(content: Text(message), backgroundColor: cs.surface),
     );
   }
 
@@ -504,7 +505,9 @@ class _PartyConfigScreenState extends State<PartyConfigScreen>
                     surfaceTintColor: Colors.transparent,
                     title: Text(
                       'Configurações',
-                      style: tt.titleMedium?.copyWith(fontWeight: FontWeight.w700),
+                      style: tt.titleMedium?.copyWith(
+                        fontWeight: FontWeight.w700,
+                      ),
                     ),
                     leading: IconButton(
                       tooltip: 'Voltar',
@@ -516,9 +519,9 @@ class _PartyConfigScreenState extends State<PartyConfigScreen>
                         tooltip: 'Copiar link',
                         onPressed: canShowActions
                             ? () => _copyToClipboard(
-                                  buildPartyInviteLink(data!.joinCode),
-                                  'Link copiado.',
-                                )
+                                buildPartyInviteLink(data!.joinCode),
+                                'Link copiado.',
+                              )
                             : null,
                         icon: const Icon(Icons.link),
                       ),
@@ -526,9 +529,9 @@ class _PartyConfigScreenState extends State<PartyConfigScreen>
                         tooltip: 'Copiar código',
                         onPressed: canShowActions
                             ? () => _copyToClipboard(
-                                  data!.joinCode,
-                                  'Código copiado.',
-                                )
+                                data!.joinCode,
+                                'Código copiado.',
+                              )
                             : null,
                         icon: const Icon(Icons.key_outlined),
                       ),
@@ -603,7 +606,9 @@ class _PartyConfigScreenState extends State<PartyConfigScreen>
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         PartyConfigHeroCard(
-          name: _viewModel.draftName.isNotEmpty ? _viewModel.draftName : data.name,
+          name: _viewModel.draftName.isNotEmpty
+              ? _viewModel.draftName
+              : data.name,
           roleLabel: roleLabel,
           requiresApproval: _viewModel.draftRequiresApproval,
           locationSharingEnabled: _viewModel.draftLocationSharing,
@@ -624,8 +629,10 @@ class _PartyConfigScreenState extends State<PartyConfigScreen>
         InviteCodeSectionCard(
           joinCode: data.joinCode,
           onCopyCode: () => _copyToClipboard(data.joinCode, 'Código copiado.'),
-          onCopyLink: () =>
-              _copyToClipboard(buildPartyInviteLink(data.joinCode), 'Link copiado.'),
+          onCopyLink: () => _copyToClipboard(
+            buildPartyInviteLink(data.joinCode),
+            'Link copiado.',
+          ),
           onRotate: _confirmRotateJoinCode,
           canRotate: data.canRotateCode,
           isRotating: _viewModel.isRotatingCode,
@@ -634,7 +641,8 @@ class _PartyConfigScreenState extends State<PartyConfigScreen>
           const SizedBox(height: 20),
           const SectionHeader(
             title: 'Privacidade e acesso',
-            subtitle: 'Controle como novos membros entram e compartilham localização.',
+            subtitle:
+                'Controle como novos membros entram e compartilham localização.',
           ),
           PrivacyAccessSectionCard(
             requiresApproval: _viewModel.draftRequiresApproval,
@@ -671,15 +679,6 @@ class _PartyConfigScreenState extends State<PartyConfigScreen>
             isLoading: _viewModel.isApplyingChanges,
           ),
         ],
-        const SizedBox(height: 20),
-        Text(
-          'ID: ${data.id}',
-          style: Theme.of(context)
-              .textTheme
-              .bodySmall
-              ?.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant),
-          textAlign: TextAlign.center,
-        ),
       ],
     );
   }

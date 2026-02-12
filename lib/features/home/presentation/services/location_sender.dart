@@ -26,8 +26,8 @@ class LocationSender {
   bool _isTicking = false;
   Position? _lastSentPosition;
 
-  Future<void> start() async {
-    await _tick(requestPermissionIfNeeded: true);
+  Future<void> start({bool requestPermissionIfNeeded = true}) async {
+    await _tick(requestPermissionIfNeeded: requestPermissionIfNeeded);
     _timer ??= Timer.periodic(interval, (_) => _tick());
   }
 

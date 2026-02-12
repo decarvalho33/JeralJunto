@@ -9,18 +9,14 @@ class PartyPeopleHeader extends StatelessWidget {
     super.key,
     required this.partyName,
     required this.subtitle,
-    required this.partyId,
     required this.memberCount,
     required this.members,
-    required this.onCopyIdTap,
   });
 
   final String partyName;
   final String subtitle;
-  final String partyId;
   final int memberCount;
   final List<PartyMemberBattery> members;
-  final VoidCallback onCopyIdTap;
 
   @override
   Widget build(BuildContext context) {
@@ -29,8 +25,8 @@ class PartyPeopleHeader extends StatelessWidget {
     final average = members.isEmpty
         ? 0
         : (members.fold<int>(0, (sum, member) => sum + member.batteryLevel) /
-                members.length)
-            .round();
+                  members.length)
+              .round();
 
     return Container(
       decoration: BoxDecoration(
@@ -62,7 +58,10 @@ class PartyPeopleHeader extends StatelessWidget {
                 _StatusPill(label: 'AO VIVO'),
                 const Spacer(),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 6,
+                  ),
                   decoration: BoxDecoration(
                     color: Colors.white.withOpacity(0.18),
                     borderRadius: BorderRadius.circular(999),
@@ -97,14 +96,6 @@ class PartyPeopleHeader extends StatelessWidget {
             Row(
               children: [
                 _StatCard(label: 'Membros', value: memberCount.toString()),
-                const SizedBox(width: 12),
-                _StatCard(label: 'ID', value: partyId),
-                const SizedBox(width: 8),
-                IconButton(
-                  onPressed: onCopyIdTap,
-                  icon: const Icon(Icons.copy_outlined),
-                  color: Colors.white,
-                ),
               ],
             ),
             const SizedBox(height: 16),
@@ -257,7 +248,10 @@ class PartyInviteCodeCard extends StatelessWidget {
               icon: const Icon(Icons.copy_outlined, size: 18),
               label: const Text('Copiar'),
               style: FilledButton.styleFrom(
-                padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 18,
+                  vertical: 12,
+                ),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(18),
                 ),
@@ -304,7 +298,11 @@ class PartyRulesCard extends StatelessWidget {
                   color: cs.tertiary.withOpacity(0.12),
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: Icon(Icons.shield_outlined, color: cs.tertiary, size: 20),
+                child: Icon(
+                  Icons.shield_outlined,
+                  color: cs.tertiary,
+                  size: 20,
+                ),
               ),
               const SizedBox(width: 12),
               Column(
@@ -412,10 +410,7 @@ class SafetyTipsCard extends StatelessWidget {
 }
 
 class PartyMemberBatteryCard extends StatelessWidget {
-  const PartyMemberBatteryCard({
-    super.key,
-    required this.members,
-  });
+  const PartyMemberBatteryCard({super.key, required this.members});
 
   final List<PartyMemberBattery> members;
 
@@ -424,7 +419,10 @@ class PartyMemberBatteryCard extends StatelessWidget {
     final tt = Theme.of(context).textTheme;
     final cs = Theme.of(context).colorScheme;
 
-    final total = members.fold<int>(0, (sum, member) => sum + member.batteryLevel);
+    final total = members.fold<int>(
+      0,
+      (sum, member) => sum + member.batteryLevel,
+    );
     final average = members.isEmpty ? 0 : (total / members.length).round();
     final lowCount = members.where((member) => member.batteryLevel < 25).length;
 
@@ -454,7 +452,9 @@ class PartyMemberBatteryCard extends StatelessWidget {
                       const SizedBox(height: 2),
                       Text(
                         'Status do aparelho dos membros conectados',
-                        style: tt.bodySmall?.copyWith(color: cs.onSurfaceVariant),
+                        style: tt.bodySmall?.copyWith(
+                          color: cs.onSurfaceVariant,
+                        ),
                       ),
                     ],
                   ),
@@ -526,7 +526,9 @@ class PartyMemberCard extends StatelessWidget {
                       backgroundColor: avatarColor,
                       child: Text(
                         member.name.isNotEmpty ? member.name[0] : '?',
-                        style: tt.titleMedium?.copyWith(color: cs.onPrimaryContainer),
+                        style: tt.titleMedium?.copyWith(
+                          color: cs.onPrimaryContainer,
+                        ),
                       ),
                     ),
                     Positioned(
@@ -537,7 +539,9 @@ class PartyMemberCard extends StatelessWidget {
                         height: 12,
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
-                          color: member.isOnline ? AppSemanticColors.live : cs.outline,
+                          color: member.isOnline
+                              ? AppSemanticColors.live
+                              : cs.outline,
                           border: Border.all(color: cs.surface, width: 2),
                         ),
                       ),
@@ -563,7 +567,9 @@ class PartyMemberCard extends StatelessWidget {
                       const SizedBox(height: 4),
                       Text(
                         member.role,
-                        style: tt.bodySmall?.copyWith(color: cs.onSurfaceVariant),
+                        style: tt.bodySmall?.copyWith(
+                          color: cs.onSurfaceVariant,
+                        ),
                       ),
                       const SizedBox(height: 8),
                       ClipRRect(
@@ -578,7 +584,9 @@ class PartyMemberCard extends StatelessWidget {
                       const SizedBox(height: 4),
                       Text(
                         'Atualizado ${member.lastUpdate}',
-                        style: tt.labelSmall?.copyWith(color: cs.onSurfaceVariant),
+                        style: tt.labelSmall?.copyWith(
+                          color: cs.onSurfaceVariant,
+                        ),
                       ),
                     ],
                   ),
@@ -630,11 +638,7 @@ class PartyMemberCard extends StatelessWidget {
 }
 
 class PartyAvatarStack extends StatelessWidget {
-  const PartyAvatarStack({
-    super.key,
-    required this.members,
-    this.maxCount = 4,
-  });
+  const PartyAvatarStack({super.key, required this.members, this.maxCount = 4});
 
   final List<PartyMemberBattery> members;
   final int maxCount;
@@ -658,7 +662,8 @@ class PartyAvatarStack extends StatelessWidget {
                   left: i * 22,
                   child: CircleAvatar(
                     radius: 18,
-                    backgroundColor: display[i].accentColor ?? cs.primaryContainer,
+                    backgroundColor:
+                        display[i].accentColor ?? cs.primaryContainer,
                     child: Text(
                       display[i].name.isNotEmpty ? display[i].name[0] : '?',
                       style: TextStyle(color: cs.onPrimaryContainer),
@@ -671,10 +676,9 @@ class PartyAvatarStack extends StatelessWidget {
         const SizedBox(width: 12),
         Text(
           remaining > 0 ? '+$remaining membros' : 'Todos juntos',
-          style: Theme.of(context)
-              .textTheme
-              .labelSmall
-              ?.copyWith(color: Colors.white70),
+          style: Theme.of(
+            context,
+          ).textTheme.labelSmall?.copyWith(color: Colors.white70),
         ),
       ],
     );
@@ -739,10 +743,7 @@ class _StatCard extends StatelessWidget {
         children: [
           Text(label, style: tt.labelSmall?.copyWith(color: Colors.white70)),
           const SizedBox(height: 4),
-          Text(
-            value,
-            style: tt.titleSmall?.copyWith(color: Colors.white),
-          ),
+          Text(value, style: tt.titleSmall?.copyWith(color: Colors.white)),
         ],
       ),
     );
@@ -750,11 +751,7 @@ class _StatCard extends StatelessWidget {
 }
 
 class _RuleRow extends StatelessWidget {
-  const _RuleRow({
-    required this.icon,
-    required this.text,
-    this.boxed = false,
-  });
+  const _RuleRow({required this.icon, required this.text, this.boxed = false});
 
   final IconData icon;
   final String text;
@@ -798,10 +795,7 @@ class _RuleRow extends StatelessWidget {
 }
 
 class _TipItem extends StatelessWidget {
-  const _TipItem({
-    required this.index,
-    required this.text,
-  });
+  const _TipItem({required this.index, required this.text});
 
   final int index;
   final String text;
@@ -920,10 +914,7 @@ class _PillLabel extends StatelessWidget {
         color: color.withOpacity(0.12),
         borderRadius: BorderRadius.circular(999),
       ),
-      child: Text(
-        text,
-        style: tt.labelSmall?.copyWith(color: color),
-      ),
+      child: Text(text, style: tt.labelSmall?.copyWith(color: color)),
     );
   }
 }

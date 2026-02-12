@@ -69,7 +69,7 @@ class NoPartyOverlay extends StatelessWidget {
 
                 final partyId = _parseInt(createdParty['id']);
                 if (partyId <= 0) {
-                  throw StateError('ID de party inválido');
+                  throw StateError('Party inválida');
                 }
 
                 await supabase

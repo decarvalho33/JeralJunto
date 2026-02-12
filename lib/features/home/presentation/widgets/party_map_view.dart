@@ -110,7 +110,9 @@ class PartyMapView extends ConsumerWidget {
             right: 20,
             child: LinearProgressIndicator(minHeight: 2),
           ),
-        if (permissionState != LocationPermissionUiState.granted)
+        if (permissionState == LocationPermissionUiState.denied ||
+            permissionState == LocationPermissionUiState.deniedForever ||
+            permissionState == LocationPermissionUiState.serviceDisabled)
           Positioned(
             left: 16,
             right: 16,

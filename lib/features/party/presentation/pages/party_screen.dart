@@ -294,27 +294,12 @@ class _PartyScreenState extends State<PartyScreen> {
                       ),
                     ),
                     const SizedBox(height: 10),
-                    Row(
-                      children: [
-                        _InfoPill(label: 'ID ${party.id}'),
-                        const SizedBox(width: 8),
-                        Container(
-                          width: 4,
-                          height: 4,
-                          decoration: BoxDecoration(
-                            color: cs.onSurfaceVariant.withOpacity(0.4),
-                            shape: BoxShape.circle,
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        Text(
-                          '${_controller.members.length} membros',
-                          style: tt.bodySmall?.copyWith(
-                            color: cs.onSurfaceVariant,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ],
+                    Text(
+                      '${_controller.members.length} membros',
+                      style: tt.bodySmall?.copyWith(
+                        color: cs.onSurfaceVariant,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
                     const SizedBox(height: 18),
                     PartyInviteCodeCard(
@@ -332,10 +317,6 @@ class _PartyScreenState extends State<PartyScreen> {
                       onSettingsTap: () => _openConfig(party),
                       showSettings: false,
                     ),
-                    const SizedBox(height: 20),
-                    const PartyRulesCard(),
-                    const SizedBox(height: 16),
-                    const SafetyTipsCard(),
                     const SizedBox(height: 20),
                     Row(
                       children: [
@@ -367,6 +348,10 @@ class _PartyScreenState extends State<PartyScreen> {
                       members: _controller.members,
                       currentUserId: currentUserId,
                     ),
+                    const SizedBox(height: 20),
+                    const PartyRulesCard(),
+                    const SizedBox(height: 16),
+                    const SafetyTipsCard(),
                     const SizedBox(height: 22),
                     OutlinedButton.icon(
                       onPressed: party.idCriador == currentUserId
@@ -465,33 +450,6 @@ class _LiveDotState extends State<_LiveDot>
             ),
           ),
         ],
-      ),
-    );
-  }
-}
-
-class _InfoPill extends StatelessWidget {
-  const _InfoPill({required this.label});
-
-  final String label;
-
-  @override
-  Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-    final tt = Theme.of(context).textTheme;
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-      decoration: BoxDecoration(
-        color: cs.primary.withOpacity(0.08),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: cs.primary.withOpacity(0.18)),
-      ),
-      child: Text(
-        label,
-        style: tt.labelSmall?.copyWith(
-          color: cs.primary,
-          fontWeight: FontWeight.w700,
-        ),
       ),
     );
   }
