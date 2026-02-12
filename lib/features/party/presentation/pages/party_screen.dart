@@ -2,6 +2,7 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:share_plus/share_plus.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../../core/utils/party_invite.dart';
@@ -89,6 +90,33 @@ class _PartyScreenState extends State<PartyScreen> {
     }
     HapticFeedback.selectionClick();
     _showSnack(feedback);
+  }
+
+  Future<void> _shareInvite(Party party) async {
+    final partyName = party.nome.trim();
+    final link = buildPartyInviteLink(party.joinCode);
+    final message = partyName.isEmpty
+        ? 'Vem para minha party no Jeral Junto: $link'
+        : 'Vem para a party "$partyName" no Jeral Junto: $link';
+
+    try {
+      final result = await Share.share(
+        message,
+        subject: 'Convite para party no Jeral Junto',
+      );
+
+      if (result.status == ShareResultStatus.unavailable) {
+        await _copyToClipboard(
+          link,
+          'Compartilhamento indisponível neste navegador. Link copiado.',
+        );
+      }
+    } catch (_) {
+      await _copyToClipboard(
+        link,
+        'Compartilhamento indisponível neste navegador. Link copiado.',
+      );
+    }
   }
 
   void _openConfig(Party party) {
@@ -296,8 +324,7 @@ class _PartyScreenState extends State<PartyScreen> {
                     ),
                     const SizedBox(height: 16),
                     PartyActionRow(
-                      onInviteTap: () =>
-                          _copyToClipboard(party.joinCode, 'Código copiado.'),
+                      onInviteTap: () => _shareInvite(party),
                       onCopyLinkTap: () => _copyToClipboard(
                         buildPartyInviteLink(party.joinCode),
                         'Link copiado.',
