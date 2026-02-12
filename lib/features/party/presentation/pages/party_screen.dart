@@ -58,9 +58,7 @@ class _PartyScreenState extends State<PartyScreen> {
         behavior: SnackBarBehavior.floating,
         margin: const EdgeInsets.fromLTRB(16, 0, 16, 16),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         backgroundColor: cs.inverseSurface,
         showCloseIcon: true,
         closeIconColor: cs.onInverseSurface,
@@ -102,6 +100,69 @@ class _PartyScreenState extends State<PartyScreen> {
     );
   }
 
+  Future<void> _confirmLeaveParty(Party party) async {
+    final user = Supabase.instance.client.auth.currentUser;
+    if (user == null) {
+      _showSnack('Usuário não autenticado.');
+      return;
+    }
+
+    if (party.idCriador == user.id) {
+      _showSnack(
+        'Você é o criador desta party. Transfira a criação ou encerre a party.',
+      );
+      return;
+    }
+
+    final partyName = party.nome.trim().isEmpty
+        ? 'esta party'
+        : '"${party.nome}"';
+    final shouldLeave = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) {
+        return AlertDialog(
+          title: const Text('Sair da party?'),
+          content: Text('Você vai sair de $partyName.'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop(false),
+              child: const Text('Cancelar'),
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.red,
+                foregroundColor: Colors.white,
+              ),
+              onPressed: () => Navigator.of(dialogContext).pop(true),
+              child: const Text('Sair'),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (!mounted || shouldLeave != true) {
+      return;
+    }
+
+    try {
+      await Supabase.instance.client.from('Party_Usuario').delete().match({
+        'idParty': party.id,
+        'idUsuario': user.id,
+      });
+      if (!mounted) {
+        return;
+      }
+      _showSnack('Você saiu de $partyName.');
+      Navigator.of(context).pop(true);
+    } catch (_) {
+      if (!mounted) {
+        return;
+      }
+      _showSnack('Não foi possível sair da party.');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return AnimatedBuilder(
@@ -110,6 +171,7 @@ class _PartyScreenState extends State<PartyScreen> {
         final cs = Theme.of(context).colorScheme;
         final tt = Theme.of(context).textTheme;
         final party = _controller.party;
+        final currentUserId = Supabase.instance.client.auth.currentUser?.id;
         final topPadding =
             MediaQuery.of(context).padding.top + kToolbarHeight + 12;
 
@@ -229,17 +291,13 @@ class _PartyScreenState extends State<PartyScreen> {
                     const SizedBox(height: 18),
                     PartyInviteCodeCard(
                       code: party.joinCode,
-                      onCopy: () => _copyToClipboard(
-                        party.joinCode,
-                        'Código copiado.',
-                      ),
+                      onCopy: () =>
+                          _copyToClipboard(party.joinCode, 'Código copiado.'),
                     ),
                     const SizedBox(height: 16),
                     PartyActionRow(
-                      onInviteTap: () => _copyToClipboard(
-                        party.joinCode,
-                        'Código copiado.',
-                      ),
+                      onInviteTap: () =>
+                          _copyToClipboard(party.joinCode, 'Código copiado.'),
                       onCopyLinkTap: () => _copyToClipboard(
                         buildPartyInviteLink(party.joinCode),
                         'Link copiado.',
@@ -261,8 +319,11 @@ class _PartyScreenState extends State<PartyScreen> {
                             color: cs.primary.withOpacity(0.12),
                             borderRadius: BorderRadius.circular(10),
                           ),
-                          child: Icon(Icons.group_outlined,
-                              color: cs.primary, size: 18),
+                          child: Icon(
+                            Icons.group_outlined,
+                            color: cs.primary,
+                            size: 18,
+                          ),
                         ),
                         const SizedBox(width: 10),
                         Text(
@@ -277,9 +338,34 @@ class _PartyScreenState extends State<PartyScreen> {
                     const SizedBox(height: 12),
                     PartyMembersList(
                       members: _controller.members,
-                      currentUserId:
-                          Supabase.instance.client.auth.currentUser?.id,
+                      currentUserId: currentUserId,
                     ),
+                    const SizedBox(height: 22),
+                    OutlinedButton.icon(
+                      onPressed: party.idCriador == currentUserId
+                          ? null
+                          : () => _confirmLeaveParty(party),
+                      icon: const Icon(Icons.logout),
+                      label: const Text('Sair da party'),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: cs.error,
+                        side: BorderSide(color: cs.error),
+                        minimumSize: const Size.fromHeight(50),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(14),
+                        ),
+                      ),
+                    ),
+                    if (party.idCriador == currentUserId) ...[
+                      const SizedBox(height: 8),
+                      Text(
+                        'Criadores não podem sair. Transfira a criação ou encerre a party.',
+                        style: tt.bodySmall?.copyWith(
+                          color: cs.onSurfaceVariant,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                    ],
                   ],
                 ),
             ],
@@ -305,12 +391,14 @@ class _LiveDotState extends State<_LiveDot>
   @override
   void initState() {
     super.initState();
-    _controller =
-        AnimationController(vsync: this, duration: const Duration(seconds: 2))
-          ..repeat();
-    _pulse = Tween<double>(begin: 0.8, end: 1.6).animate(
-      CurvedAnimation(parent: _controller, curve: Curves.easeOut),
-    );
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 2),
+    )..repeat();
+    _pulse = Tween<double>(
+      begin: 0.8,
+      end: 1.6,
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeOut));
   }
 
   @override
@@ -398,7 +486,11 @@ class _EmptyState extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.group_off_outlined, size: 48, color: cs.onSurfaceVariant),
+            Icon(
+              Icons.group_off_outlined,
+              size: 48,
+              color: cs.onSurfaceVariant,
+            ),
             const SizedBox(height: 12),
             Text(
               'Nenhuma party encontrada.',
@@ -412,10 +504,7 @@ class _EmptyState extends StatelessWidget {
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 16),
-            OutlinedButton(
-              onPressed: onRetry,
-              child: const Text('Recarregar'),
-            ),
+            OutlinedButton(onPressed: onRetry, child: const Text('Recarregar')),
           ],
         ),
       ),
@@ -424,10 +513,7 @@ class _EmptyState extends StatelessWidget {
 }
 
 class _ErrorState extends StatelessWidget {
-  const _ErrorState({
-    required this.message,
-    required this.onRetry,
-  });
+  const _ErrorState({required this.message, required this.onRetry});
 
   final String message;
   final VoidCallback onRetry;
@@ -445,11 +531,7 @@ class _ErrorState extends StatelessWidget {
           children: [
             Icon(Icons.error_outline, size: 48, color: cs.error),
             const SizedBox(height: 12),
-            Text(
-              message,
-              style: tt.titleMedium,
-              textAlign: TextAlign.center,
-            ),
+            Text(message, style: tt.titleMedium, textAlign: TextAlign.center),
             const SizedBox(height: 12),
             OutlinedButton(
               onPressed: onRetry,

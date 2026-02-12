@@ -5,6 +5,7 @@ abstract class PartyRepository {
   Future<Party> getPartyById(int partyId);
   Future<Party?> getPartyByCode(String code);
   Future<void> joinParty(int partyId);
+  Future<void> switchToParty(int partyId);
   Future<List<PartyMember>> getMembers(int partyId);
   Future<Party?> getCurrentPartyForUser();
 }

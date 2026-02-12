@@ -85,6 +85,19 @@ class PartyRemoteDataSource {
           ignoreDuplicates: true,
         );
   }
+
+  Future<void> leaveAllPartiesExcept(int keepPartyId) async {
+    final user = _client.auth.currentUser;
+    if (user == null) {
+      throw StateError('Usuário não autenticado');
+    }
+
+    await _client
+        .from('Party_Usuario')
+        .delete()
+        .eq('idUsuario', user.id)
+        .neq('idParty', keepPartyId);
+  }
 }
 
 int _parseInt(dynamic value) {

@@ -29,14 +29,15 @@ class FakePartyRepository implements PartyRepository {
 
   @override
   Future<void> joinParty(int partyId) async {}
+
+  @override
+  Future<void> switchToParty(int partyId) async {}
 }
 
 void main() {
   testWidgets('Join button enabled only with 6 chars', (tester) async {
     await tester.pumpWidget(
-      MaterialApp(
-        home: JoinPartyScreen(repository: FakePartyRepository()),
-      ),
+      MaterialApp(home: JoinPartyScreen(repository: FakePartyRepository())),
     );
 
     final joinButton = find.widgetWithText(ElevatedButton, 'Entrar');

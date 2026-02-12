@@ -6,7 +6,7 @@ import '../datasources/party_remote_data_source.dart';
 
 class PartyRepositoryImpl implements PartyRepository {
   PartyRepositoryImpl({PartyRemoteDataSource? remoteDataSource})
-      : _remote = remoteDataSource ?? PartyRemoteDataSource();
+    : _remote = remoteDataSource ?? PartyRemoteDataSource();
 
   final PartyRemoteDataSource _remote;
 
@@ -35,6 +35,12 @@ class PartyRepositoryImpl implements PartyRepository {
   @override
   Future<void> joinParty(int partyId) {
     return _remote.joinParty(partyId);
+  }
+
+  @override
+  Future<void> switchToParty(int partyId) async {
+    await _remote.joinParty(partyId);
+    await _remote.leaveAllPartiesExcept(partyId);
   }
 
   @override

@@ -82,12 +82,14 @@ class _HomePageState extends ConsumerState<HomePage> {
       final user = _supabase.auth.currentUser;
       final data = await _supabase
           .from('Party_Usuario')
-          .select('Party ( id, nome )')
-          .eq('idUsuario', user?.id ?? '');
+          .select('Party ( id, nome, idCriador )')
+          .eq('idUsuario', user?.id ?? '')
+          .eq('status', 'active');
 
       if (!mounted) return;
       final parties = (data as List)
-          .map((item) => item['Party'] as Map<String, dynamic>)
+          .map((item) => item['Party'])
+          .whereType<Map<String, dynamic>>()
           .toList(growable: false);
 
       setState(() {
@@ -106,11 +108,32 @@ class _HomePageState extends ConsumerState<HomePage> {
     }
   }
 
+  void _clearActivePartyState() {
+    ref.read(currentPartyIdProvider.notifier).state = 0;
+    ref.read(selectedMemberIdProvider.notifier).state = null;
+
+    final previousPartyId = _activePartyId;
+    if (previousPartyId != null) {
+      ref.read(memberLocationsProvider(previousPartyId).notifier).reset();
+    }
+
+    _activePartyId = null;
+    _memberIdsForPolling = const [];
+    _locationsPoller?.dispose();
+    _locationsPoller = null;
+  }
+
   Future<void> _activateCurrentParty() async {
-    if (_userParties.isEmpty) return;
+    if (_userParties.isEmpty) {
+      _clearActivePartyState();
+      return;
+    }
 
     final partyId = (_userParties[_currentIndex]['id'] as num?)?.toInt() ?? 0;
-    if (partyId <= 0) return;
+    if (partyId <= 0) {
+      _clearActivePartyState();
+      return;
+    }
 
     ref.read(currentPartyIdProvider.notifier).state = partyId;
     ref.read(selectedMemberIdProvider.notifier).state = null;

@@ -1,9 +1,12 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../../core/constants/app_constants.dart';
+import '../../../../core/utils/party_invite.dart';
+import '../../../../core/utils/pending_party_invite.dart';
 import '../../../../app/router/app_routes.dart';
 import '../widgets/auth_scaffold.dart';
 import '../widgets/auth_widgets.dart';
@@ -23,8 +26,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
   @override
   void initState() {
     super.initState();
-    _authSubscription =
-        Supabase.instance.client.auth.onAuthStateChange.listen((event) {
+    _authSubscription = Supabase.instance.client.auth.onAuthStateChange.listen((
+      event,
+    ) {
       final session = event.session;
       if (session != null && !_didSyncProfile) {
         _didSyncProfile = true;
@@ -35,7 +39,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
           setState(() => _isLoading = false);
           Navigator.pushNamedAndRemoveUntil(
             context,
-            AppRoutes.home,
+            AppRoutes.root,
             (_) => false,
           );
         });
@@ -52,7 +56,15 @@ class _RegisterScreenState extends State<RegisterScreen> {
   Future<void> _signUpWithProvider(OAuthProvider provider) async {
     setState(() => _isLoading = true);
     try {
-      await Supabase.instance.client.auth.signInWithOAuth(provider);
+      final pendingCode = PendingPartyInvite.peek();
+      final redirectTo = kIsWeb && pendingCode != null
+          ? buildPartyInviteLink(pendingCode)
+          : null;
+
+      await Supabase.instance.client.auth.signInWithOAuth(
+        provider,
+        redirectTo: redirectTo,
+      );
     } on AuthException catch (error) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -83,18 +95,17 @@ class _RegisterScreenState extends State<RegisterScreen> {
     }
 
     final metadata = user.userMetadata ?? <String, dynamic>{};
-    final fallbackName = metadata['full_name'] ??
+    final fallbackName =
+        metadata['full_name'] ??
         metadata['name'] ??
         metadata['preferred_username'];
-    final fallbackAvatar = metadata['avatar_url'] ??
+    final fallbackAvatar =
+        metadata['avatar_url'] ??
         metadata['picture'] ??
         metadata['photo_url'] ??
         metadata['avatar'];
 
-    final payload = <String, dynamic>{
-      'id': user.id,
-      'email': user.email,
-    };
+    final payload = <String, dynamic>{'id': user.id, 'email': user.email};
 
     if (fallbackName is String && fallbackName.isNotEmpty) {
       payload['nome'] = fallbackName;
@@ -154,11 +165,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
         width: double.infinity,
         height: 52,
         child: OutlinedButton.icon(
-          onPressed:
-              _isLoading ? null : () => _signUpWithProvider(OAuthProvider.google),
-          style: OutlinedButton.styleFrom(
-            backgroundColor: Colors.white,
-          ),
+          onPressed: _isLoading
+              ? null
+              : () => _signUpWithProvider(OAuthProvider.google),
+          style: OutlinedButton.styleFrom(backgroundColor: Colors.white),
           icon: const Icon(Icons.g_mobiledata, size: 28),
           label: const Text('Entrar com Google'),
         ),
@@ -173,9 +183,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
           onPressed: _isLoading
               ? null
               : () => Navigator.pushNamed(context, AppRoutes.emailRegister),
-          style: OutlinedButton.styleFrom(
-            backgroundColor: AppColors.surface,
-          ),
+          style: OutlinedButton.styleFrom(backgroundColor: AppColors.surface),
           child: const Text('Cadastrar com email'),
         ),
       ),
@@ -183,8 +191,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
       Align(
         alignment: Alignment.center,
         child: TextButton(
-          onPressed:
-              _isLoading ? null : () => Navigator.pushNamed(context, AppRoutes.login),
+          onPressed: _isLoading
+              ? null
+              : () => Navigator.pushNamed(context, AppRoutes.login),
           child: const Text(
             'Já possuo cadastro',
             style: TextStyle(color: AppColors.ink),
@@ -194,5 +203,4 @@ class _RegisterScreenState extends State<RegisterScreen> {
       const SizedBox(height: 24),
     ];
   }
-
 }

@@ -39,10 +39,9 @@ class AppWidget extends StatelessWidget {
         AppRoutes.privacy: (_) => const PrivacyScreen(),
       },
       onGenerateRoute: PartyDeepLinkHandler.tryBuildRoute,
-      onUnknownRoute: (_) => MaterialPageRoute<void>(
-        builder: (_) => const AuthGate(),
-      ),
-      initialRoute: AppRoutes.root,
+      onUnknownRoute: (_) =>
+          MaterialPageRoute<void>(builder: (_) => const AuthGate()),
+      initialRoute: PartyDeepLinkHandler.resolveInitialRoute(),
     );
   }
 }

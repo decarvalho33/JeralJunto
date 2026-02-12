@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../../../../app/router/app_routes.dart';
 import '../../../../core/utils/input_formatters.dart';
+import '../../../../core/utils/pending_party_invite.dart';
 import '../../../../core/utils/post_frame_actions.dart';
 import '../../data/repositories/party_repository_impl.dart';
-import '../../domain/models/party.dart';
 import '../../domain/repositories/party_repository.dart';
 import '../controllers/join_party_controller.dart';
-import 'party_screen.dart';
 
 class JoinPartyScreen extends StatefulWidget {
   const JoinPartyScreen({
@@ -61,22 +62,117 @@ class _JoinPartyScreenState extends State<JoinPartyScreen> {
   }
 
   Future<void> _submit() async {
+    final user = Supabase.instance.client.auth.currentUser;
+    if (user == null) {
+      PendingPartyInvite.set(_controller.text);
+      await _showAuthRequiredDialog();
+      return;
+    }
+
     final party = await _joinController.submit(_controller.text);
     if (!mounted) {
       return;
     }
     if (party == null) {
+      if (_joinController.hasPartyConflict) {
+        await _confirmPartySwitch();
+      }
       return;
     }
-    _navigateToParty(party);
+    PendingPartyInvite.clear();
+    _navigateToHome();
   }
 
-  void _navigateToParty(Party party) {
-    Navigator.of(context).pushReplacement(
-      MaterialPageRoute<void>(
-        builder: (_) => PartyScreen(partyId: party.id),
-      ),
-    );
+  void _navigateToHome() {
+    Navigator.of(context).pushNamedAndRemoveUntil(AppRoutes.home, (_) => false);
+  }
+
+  Future<void> _showAuthRequiredDialog() async {
+    if (!mounted) {
+      return;
+    }
+
+    await PostFrameActions.showDialogPostFrame<void>(context, (context) {
+      return AlertDialog(
+        title: const Text('Faça login para continuar'),
+        content: const Text(
+          'Você precisa entrar ou criar conta para participar da party.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Agora não'),
+          ),
+          OutlinedButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+              if (!mounted) {
+                return;
+              }
+              Navigator.of(this.context).pushNamed(AppRoutes.login);
+            },
+            child: const Text('Entrar'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+              if (!mounted) {
+                return;
+              }
+              Navigator.of(this.context).pushNamed(AppRoutes.register);
+            },
+            child: const Text('Criar conta'),
+          ),
+        ],
+      );
+    });
+  }
+
+  Future<void> _confirmPartySwitch() async {
+    final currentParty = _joinController.currentPartyConflict;
+    final targetParty = _joinController.targetPartyConflict;
+    if (currentParty == null || targetParty == null || !mounted) {
+      return;
+    }
+
+    final currentName = currentParty.nome.trim().isEmpty
+        ? 'sua party atual'
+        : currentParty.nome.trim();
+    final targetName = targetParty.nome.trim().isEmpty
+        ? 'nova party'
+        : targetParty.nome.trim();
+
+    final confirmed = await PostFrameActions.showDialogPostFrame<bool>(context, (
+      context,
+    ) {
+      return AlertDialog(
+        title: const Text('Trocar de party?'),
+        content: Text(
+          'Você já está em "$currentName". Para entrar em "$targetName", você vai sair das outras parties.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text('Cancelar'),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            child: const Text('Trocar'),
+          ),
+        ],
+      );
+    });
+
+    if (confirmed != true) {
+      return;
+    }
+
+    final party = await _joinController.confirmSwitchAndJoin();
+    if (!mounted || party == null) {
+      return;
+    }
+    PendingPartyInvite.clear();
+    _navigateToHome();
   }
 
   @override
@@ -84,9 +180,7 @@ class _JoinPartyScreenState extends State<JoinPartyScreen> {
     final tt = Theme.of(context).textTheme;
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Entrar na party'),
-      ),
+      appBar: AppBar(title: const Text('Entrar na party')),
       body: SafeArea(
         child: AnimatedBuilder(
           animation: Listenable.merge([_joinController, _controller]),
@@ -97,10 +191,7 @@ class _JoinPartyScreenState extends State<JoinPartyScreen> {
               padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
               keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
               children: [
-                Text(
-                  'Digite o código de convite',
-                  style: tt.titleMedium,
-                ),
+                Text('Digite o código de convite', style: tt.titleMedium),
                 const SizedBox(height: 8),
                 Text(
                   'Use o código de 6 caracteres que você recebeu.',
@@ -130,7 +221,8 @@ class _JoinPartyScreenState extends State<JoinPartyScreen> {
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
-                    onPressed: _joinController.isLoading ||
+                    onPressed:
+                        _joinController.isLoading ||
                             _controller.text.length != 6
                         ? null
                         : _submit,

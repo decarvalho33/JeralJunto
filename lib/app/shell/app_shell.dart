@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../features/home/presentation/pages/home_page.dart';
-import '../../features/auth/presentation/pages/login_screen.dart'; 
+import '../../features/auth/presentation/pages/login_screen.dart';
 
 class AppShell extends StatelessWidget {
   const AppShell({super.key});
@@ -11,16 +11,21 @@ class AppShell extends StatelessWidget {
     return StreamBuilder<AuthState>(
       stream: Supabase.instance.client.auth.onAuthStateChange,
       builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Scaffold(body: Center(child: CircularProgressIndicator()));
-        }
+        final session =
+            snapshot.data?.session ??
+            Supabase.instance.client.auth.currentSession;
 
-        final session = snapshot.data?.session;
+        if (snapshot.connectionState == ConnectionState.waiting &&
+            session == null) {
+          return const Scaffold(
+            body: Center(child: CircularProgressIndicator()),
+          );
+        }
 
         if (session != null) {
           return const HomePage();
         } else {
-          return const LoginScreen(); 
+          return const LoginScreen();
         }
       },
     );
