@@ -70,7 +70,7 @@ class _HomePageState extends ConsumerState<HomePage> {
       },
     );
 
-    await _locationSender!.start(requestPermissionIfNeeded: !kIsWeb);
+    await _locationSender!.start(requestPermissionIfNeeded: true);
   }
 
   Future<void> _requestLocationPermission() async {

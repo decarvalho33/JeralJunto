@@ -94,7 +94,7 @@ class PartyMapView extends ConsumerWidget {
           children: [
             TileLayer(
               urlTemplate:
-                  'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
+                  'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',
               subdomains: const ['a', 'b', 'c', 'd'],
               tileProvider: CancellableNetworkTileProvider(),
               retinaMode: MediaQuery.devicePixelRatioOf(context) > 1.0,
@@ -129,12 +129,12 @@ class PartyMapView extends ConsumerWidget {
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
               decoration: BoxDecoration(
-                color: Colors.black.withValues(alpha: 0.45),
+                color: Colors.white.withValues(alpha: 0.78),
                 borderRadius: BorderRadius.circular(8),
               ),
               child: const Text(
                 '© OpenStreetMap © CARTO',
-                style: TextStyle(fontSize: 11, color: Colors.white70),
+                style: TextStyle(fontSize: 11, color: Colors.black87),
               ),
             ),
           ),
