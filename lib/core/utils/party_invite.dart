@@ -1,8 +1,6 @@
 import 'input_formatters.dart';
 
-const String _inviteScheme = 'http';
-const String _inviteHost = 'localhost';
-const int _invitePort = 3000;
+const String _inviteHost = 'jeraljunto.app.br';
 const String _invitePath = '/join';
 
 String buildPartyInviteLink(String joinCode) {
@@ -10,13 +8,7 @@ String buildPartyInviteLink(String joinCode) {
   final queryParameters = normalizedCode.isEmpty
       ? null
       : <String, String>{'code': normalizedCode};
-  return Uri(
-    scheme: _inviteScheme,
-    host: _inviteHost,
-    port: _invitePort,
-    path: _invitePath,
-    queryParameters: queryParameters,
-  ).toString();
+  return Uri.https(_inviteHost, _invitePath, queryParameters).toString();
 }
 
 String? extractJoinCodeFromInviteUri(Uri uri) {
