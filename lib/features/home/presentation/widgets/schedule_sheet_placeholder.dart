@@ -52,6 +52,11 @@ class _ScheduleSheetPlaceholderState
   final _supabase = Supabase.instance.client;
   final DraggableScrollableController _controller =
       DraggableScrollableController();
+  static const double _minSheetSize = 0.12;
+  static const double _peekSheetSize = 0.15;
+  static const double _midSheetSize = 0.6;
+  static const double _maxSheetSize = 0.92;
+  static const List<double> _sheetSnapSizes = [_minSheetSize, _peekSheetSize, _midSheetSize, _maxSheetSize];
 
   final DateTime _inicioFevereiro = DateTime(2026, 2, 1);
   final DateTime _fimFevereiro = DateTime(2026, 2, 28);
@@ -94,7 +99,7 @@ class _ScheduleSheetPlaceholderState
     _controller.addListener(() {
       if (!mounted) return;
       final size = _controller.size;
-      final nextFormat = size > 0.6 ? tc.CalendarFormat.month : tc.CalendarFormat.week;
+      final nextFormat = size > _midSheetSize ? tc.CalendarFormat.month : tc.CalendarFormat.week;
       final nextShowFab = size > 0.3;
       if (nextFormat == _calendarFormat && nextShowFab == _showFab) return;
       setState(() { _calendarFormat = nextFormat; _showFab = nextShowFab; });
@@ -213,12 +218,12 @@ class _ScheduleSheetPlaceholderState
 
   @override
   Widget build(BuildContext context) {
-    final bool isMinimized = _controller.isAttached && _controller.size <= 0.08;
+    final bool isMinimized = _controller.isAttached && _controller.size <= _minSheetSize;
 
     return DraggableScrollableSheet(
       expand: false, controller: _controller,
-      initialChildSize: 0.08, minChildSize: 0.08, maxChildSize: 0.92,
-      snap: true, snapSizes: const [0.08, 0.15, 0.6, 0.92],
+      initialChildSize: _minSheetSize, minChildSize: _minSheetSize, maxChildSize: _maxSheetSize,
+      snap: true, snapSizes: _sheetSnapSizes,
       builder: (context, scrollController) {
         return Container(
           decoration: const BoxDecoration(color: Colors.white, borderRadius: BorderRadius.vertical(top: Radius.circular(24)), boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 15, spreadRadius: 5)]),
@@ -376,5 +381,32 @@ class _ScheduleSheetPlaceholderState
     );
   }
 
-  Widget _buildHandle() => GestureDetector(onTap: () => _controller.animateTo(_controller.size > 0.28 ? 0.08 : 0.92, duration: const Duration(milliseconds: 300), curve: Curves.easeInOut), child: Container(width: double.infinity, padding: const EdgeInsets.symmetric(vertical: 12), color: Colors.transparent, child: Center(child: Container(width: 45, height: 5, decoration: BoxDecoration(color: Colors.grey[300], borderRadius: BorderRadius.circular(10))))));
+  void _snapSheetToNearestSize() {
+    if (!_controller.isAttached) return;
+    final currentSize = _controller.size;
+    final nearestSize = _sheetSnapSizes.reduce((a, b) => (currentSize - a).abs() <= (currentSize - b).abs() ? a : b);
+    _controller.animateTo(nearestSize, duration: const Duration(milliseconds: 180), curve: Curves.easeOutCubic);
+  }
+
+  void _toggleSheetByTap() {
+    if (!_controller.isAttached) return;
+    final targetSize = _controller.size > 0.28 ? _minSheetSize : _maxSheetSize;
+    _controller.animateTo(targetSize, duration: const Duration(milliseconds: 300), curve: Curves.easeInOut);
+  }
+
+  Widget _buildHandle() => GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTap: _toggleSheetByTap,
+        onVerticalDragUpdate: (details) {
+          if (!_controller.isAttached) return;
+          final screenHeight = MediaQuery.sizeOf(context).height;
+          if (screenHeight <= 0) return;
+          final delta = -(details.primaryDelta ?? 0) / screenHeight;
+          final nextSize = (_controller.size + delta).clamp(_minSheetSize, _maxSheetSize).toDouble();
+          _controller.jumpTo(nextSize);
+        },
+        onVerticalDragEnd: (_) => _snapSheetToNearestSize(),
+        onVerticalDragCancel: _snapSheetToNearestSize,
+        child: Container(width: double.infinity, padding: const EdgeInsets.symmetric(vertical: 12), color: Colors.transparent, child: Center(child: Container(width: 45, height: 5, decoration: BoxDecoration(color: Colors.grey[300], borderRadius: BorderRadius.circular(10))))),
+      );
 }

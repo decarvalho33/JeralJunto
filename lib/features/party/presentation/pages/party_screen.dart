@@ -347,6 +347,13 @@ class _PartyScreenState extends State<PartyScreen> {
                     PartyMembersList(
                       members: _controller.members,
                       currentUserId: currentUserId,
+                      onMemberTap: (member) {
+                        final selectedId = member.idUsuario.trim();
+                        if (selectedId.isEmpty) {
+                          return;
+                        }
+                        Navigator.of(context).pop(selectedId);
+                      },
                     ),
                     const SizedBox(height: 22),
                     OutlinedButton.icon(

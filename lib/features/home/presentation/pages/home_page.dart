@@ -41,6 +41,8 @@ class _HomePageState extends ConsumerState<HomePage> {
   int? _activePartyId;
   LocationSender? _locationSender;
   LocationsPoller? _locationsPoller;
+  int? _pendingCenterPartyId;
+  String? _pendingCenterMemberId;
 
   @override
   void initState() {
@@ -67,6 +69,7 @@ class _HomePageState extends ConsumerState<HomePage> {
           position.latitude,
           position.longitude,
         );
+        _tryFulfillPendingCenterRequest(_activePartyId);
       },
     );
 
@@ -75,6 +78,76 @@ class _HomePageState extends ConsumerState<HomePage> {
 
   Future<void> _requestLocationPermission() async {
     await _locationSender?.requestPermission();
+  }
+
+  double _readCurrentZoom() {
+    try {
+      return _mapController.camera.zoom;
+    } catch (_) {
+      return 15;
+    }
+  }
+
+  void _setPendingCenterRequest({
+    required int partyId,
+    required String memberId,
+  }) {
+    _pendingCenterPartyId = partyId;
+    _pendingCenterMemberId = memberId;
+  }
+
+  void _clearPendingCenterRequest() {
+    _pendingCenterPartyId = null;
+    _pendingCenterMemberId = null;
+  }
+
+  void _centerMapOnMember({required int partyId, required String memberId}) {
+    final normalizedMemberId = memberId.trim();
+    if (normalizedMemberId.isEmpty) {
+      return;
+    }
+
+    final currentUserId = _supabase.auth.currentUser?.id;
+    if (normalizedMemberId == currentUserId) {
+      final myLocation = ref.read(myLocationProvider);
+      ref.read(selectedMemberIdProvider.notifier).state = null;
+      if (myLocation == null) {
+        _setPendingCenterRequest(
+          partyId: partyId,
+          memberId: normalizedMemberId,
+        );
+        return;
+      }
+      _mapController.move(myLocation, _readCurrentZoom());
+      _clearPendingCenterRequest();
+      return;
+    }
+
+    ref.read(selectedMemberIdProvider.notifier).state = normalizedMemberId;
+    final selectedLocation = ref.read(
+      memberLocationsProvider(partyId),
+    )[normalizedMemberId];
+    if (selectedLocation == null) {
+      _setPendingCenterRequest(partyId: partyId, memberId: normalizedMemberId);
+      return;
+    }
+
+    _mapController.move(
+      LatLng(selectedLocation.lat, selectedLocation.lng),
+      _readCurrentZoom(),
+    );
+    _clearPendingCenterRequest();
+  }
+
+  void _tryFulfillPendingCenterRequest(int? partyId) {
+    final pendingMemberId = _pendingCenterMemberId;
+    final pendingPartyId = _pendingCenterPartyId;
+    if (partyId == null ||
+        pendingMemberId == null ||
+        pendingPartyId != partyId) {
+      return;
+    }
+    _centerMapOnMember(partyId: partyId, memberId: pendingMemberId);
   }
 
   Future<void> _loadParties() async {
@@ -111,6 +184,7 @@ class _HomePageState extends ConsumerState<HomePage> {
   void _clearActivePartyState() {
     ref.read(currentPartyIdProvider.notifier).state = 0;
     ref.read(selectedMemberIdProvider.notifier).state = null;
+    _clearPendingCenterRequest();
 
     final previousPartyId = _activePartyId;
     if (previousPartyId != null) {
@@ -146,6 +220,9 @@ class _HomePageState extends ConsumerState<HomePage> {
 
     _activePartyId = partyId;
     _memberIdsForPolling = const [];
+    if (_pendingCenterPartyId != null && _pendingCenterPartyId != partyId) {
+      _clearPendingCenterRequest();
+    }
 
     _locationsPoller?.dispose();
     _locationsPoller = LocationsPoller(
@@ -156,6 +233,7 @@ class _HomePageState extends ConsumerState<HomePage> {
         ref
             .read(memberLocationsProvider(partyId).notifier)
             .mergeFromPoll(locations);
+        _tryFulfillPendingCenterRequest(partyId);
       },
     );
 
@@ -210,22 +288,6 @@ class _HomePageState extends ConsumerState<HomePage> {
                   Navigator.of(rootContext).push(
                     MaterialPageRoute(builder: (_) => const SettingsScreen()),
                   );
-                },
-              ),
-              ListTile(
-                leading: const Icon(Icons.description_outlined),
-                title: const Text('Termos de Serviço'),
-                onTap: () {
-                  Navigator.of(context).pop();
-                  Navigator.of(rootContext).pushNamed(AppRoutes.terms);
-                },
-              ),
-              ListTile(
-                leading: const Icon(Icons.privacy_tip_outlined),
-                title: const Text('Política de Privacidade'),
-                onTap: () {
-                  Navigator.of(context).pop();
-                  Navigator.of(rootContext).pushNamed(AppRoutes.privacy);
                 },
               ),
               ListTile(
@@ -402,11 +464,19 @@ class _HomePageState extends ConsumerState<HomePage> {
               partyName: currentParty['nome']?.toString() ?? 'Party',
               onPanicTap: () => _openPanicDialog(context),
               onPartyTap: () async {
-                await Navigator.push(
+                final result = await Navigator.push<Object?>(
                   context,
                   MaterialPageRoute(builder: (_) => const PartyScreen()),
                 );
                 await _loadParties();
+                if (!mounted) return;
+
+                if (result is String) {
+                  final partyId = _activePartyId;
+                  if (partyId != null) {
+                    _centerMapOnMember(partyId: partyId, memberId: result);
+                  }
+                }
               },
               onAvatarTap: () => _openProfileMenu(context),
             ),

@@ -63,10 +63,12 @@ class PartyMembersList extends StatelessWidget {
     super.key,
     required this.members,
     this.currentUserId,
+    this.onMemberTap,
   });
 
   final List<PartyMember> members;
   final String? currentUserId;
+  final ValueChanged<PartyMember>? onMemberTap;
 
   @override
   Widget build(BuildContext context) {
@@ -92,10 +94,12 @@ class PartyMembersList extends StatelessWidget {
       children: [
         for (final member in members) ...[
           _MemberCard(
+            member: member,
             name: member.displayName ?? member.idUsuario,
             role: _roleLabel(member.cargo),
             avatarUrl: member.avatarUrl,
             isMe: currentUserId != null && member.idUsuario == currentUserId,
+            onTap: onMemberTap,
           ),
           const SizedBox(height: 12),
         ],
@@ -117,16 +121,20 @@ class PartyMembersList extends StatelessWidget {
 
 class _MemberCard extends StatelessWidget {
   const _MemberCard({
+    required this.member,
     required this.name,
     required this.role,
     required this.avatarUrl,
     required this.isMe,
+    this.onTap,
   });
 
+  final PartyMember member;
   final String name;
   final String role;
   final String? avatarUrl;
   final bool isMe;
+  final ValueChanged<PartyMember>? onTap;
 
   @override
   Widget build(BuildContext context) {
@@ -134,65 +142,79 @@ class _MemberCard extends StatelessWidget {
     final tt = Theme.of(context).textTheme;
     final hasAvatar = avatarUrl != null && avatarUrl!.isNotEmpty;
 
-    return Container(
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: cs.surface,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: cs.outlineVariant.withOpacity(0.6)),
-        boxShadow: [
-          BoxShadow(
-            color: cs.shadow.withOpacity(0.04),
-            blurRadius: 12,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Row(
-        children: [
-          CircleAvatar(
-            radius: 18,
-            backgroundImage: hasAvatar ? NetworkImage(avatarUrl!) : null,
-            child: !hasAvatar
-                ? Text(
-                    _initials(name),
-                    style: tt.labelLarge?.copyWith(color: cs.onSurface),
-                  )
-                : null,
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+    return Material(
+      color: Colors.transparent,
+      child: Ink(
+        decoration: BoxDecoration(
+          color: cs.surface,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: cs.outlineVariant.withOpacity(0.6)),
+          boxShadow: [
+            BoxShadow(
+              color: cs.shadow.withOpacity(0.04),
+              blurRadius: 12,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: InkWell(
+          borderRadius: BorderRadius.circular(20),
+          onTap: onTap == null ? null : () => onTap!(member),
+          child: Padding(
+            padding: const EdgeInsets.all(14),
+            child: Row(
               children: [
-                Row(
-                  children: [
-                    Flexible(
-                      child: Text(
-                        name,
-                        style: tt.bodyMedium?.copyWith(
-                          fontWeight: FontWeight.w600,
-                        ),
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                    if (isMe) ...[
-                      const SizedBox(width: 6),
-                      _YouBadge(),
-                    ],
-                  ],
+                CircleAvatar(
+                  radius: 18,
+                  backgroundImage: hasAvatar ? NetworkImage(avatarUrl!) : null,
+                  child: !hasAvatar
+                      ? Text(
+                          _initials(name),
+                          style: tt.labelLarge?.copyWith(color: cs.onSurface),
+                        )
+                      : null,
                 ),
-                const SizedBox(height: 2),
-                Text(
-                  role,
-                  style: tt.bodySmall?.copyWith(color: cs.onSurfaceVariant),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Flexible(
+                            child: Text(
+                              name,
+                              style: tt.bodyMedium?.copyWith(
+                                fontWeight: FontWeight.w600,
+                              ),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                          if (isMe) ...[const SizedBox(width: 6), _YouBadge()],
+                        ],
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        role,
+                        style: tt.bodySmall?.copyWith(
+                          color: cs.onSurfaceVariant,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 8),
+                _RoleBadge(role: role),
+                const SizedBox(width: 8),
+                Icon(
+                  Icons.my_location_outlined,
+                  size: 18,
+                  color: cs.onSurfaceVariant,
                 ),
               ],
             ),
           ),
-          const SizedBox(width: 8),
-          _RoleBadge(role: role),
-        ],
+        ),
       ),
     );
   }
@@ -304,10 +326,7 @@ class _MeBadge extends StatelessWidget {
         color: cs.primary.withOpacity(0.12),
         borderRadius: BorderRadius.circular(999),
       ),
-      child: Text(
-        'Você',
-        style: tt.labelSmall?.copyWith(color: cs.primary),
-      ),
+      child: Text('Você', style: tt.labelSmall?.copyWith(color: cs.primary)),
     );
   }
 }
